@@ -133,11 +133,13 @@ def execute_backtest(self: BacktestService, run_id: UUID) -> dict[str, object]:
             raise RuntimeError(
                 "The backtest worker lease or active attempt was lost during preparation."
             )
+        # Completed checkpoint trades reference their entry signal. Remove
+        # dependants before replacing deterministic signal rows on replay.
+        self.session.query(Trade).filter(Trade.run_id == checkpoint_run.id).delete()
+        self.session.query(EquityPoint).filter(EquityPoint.run_id == checkpoint_run.id).delete()
         self.session.query(SignalEvaluation).filter(
             SignalEvaluation.run_id == checkpoint_run.id
         ).delete()
-        self.session.query(EquityPoint).filter(EquityPoint.run_id == checkpoint_run.id).delete()
-        self.session.query(Trade).filter(Trade.run_id == checkpoint_run.id).delete()
         active_run_id = checkpoint_run.id
         processed = 0
         accepted_count = 0
