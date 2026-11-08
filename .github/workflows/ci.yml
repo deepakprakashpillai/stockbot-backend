@@ -30,6 +30,8 @@ jobs:
           python-version: "3.12"
       - run: uv lock --check
       - run: uv sync --all-groups --frozen
+      - run: uv export --frozen --no-dev --output-file /tmp/stockbot-requirements.txt
+      - run: uvx --from pip-audit pip-audit --requirement /tmp/stockbot-requirements.txt
       - run: uv run ruff format --check .
       - run: uv run ruff check .
       - run: uv run mypy app
