@@ -1,8 +1,8 @@
 """Measure export Python allocation against synthetic saved-evidence row counts.
 
 Requires STOCKBOT_TEST_DATABASE_URL pointing to a disposable PostgreSQL database.
-Each invocation creates and drops its own schema. This measures export only, not
-run execution, file-system cache, or whole-process RSS.
+Each invocation creates and drops its own schema. Python allocation is measured
+around export; process RSS includes setup and is a coarse upper bound.
 """
 
 from __future__ import annotations
@@ -12,6 +12,8 @@ import gc
 import hashlib
 import json
 import os
+import platform
+import resource
 import shutil
 import tempfile
 import tracemalloc
@@ -113,11 +115,14 @@ def benchmark(database_url: str, rows: int, format: str) -> dict[str, object]:
                 finally:
                     tracemalloc.stop()
                 artifact = root / str(job.artifact_path)
+                max_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+                peak_rss_mib = max_rss / (1024**2 if platform.system() == "Darwin" else 1024)
                 return {
                     "format": format,
                     "synthetic_extra_signals": rows,
                     "exported_signals": job.row_counts["signals"],
                     "peak_python_allocation_mib": round(peak / 1024**2, 2),
+                    "peak_process_rss_mib_including_setup": round(peak_rss_mib, 1),
                     "artifact_mib": round(artifact.stat().st_size / 1024**2, 2),
                 }
     finally:
