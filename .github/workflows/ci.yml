@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -43,3 +46,12 @@ jobs:
           DATABASE_URL: postgresql+psycopg://stockbot:stockbot@localhost:5432/stockbot_test
       - run: uv run python scripts/export_openapi.py
       - run: git diff --exit-code -- contracts/openapi.json contracts/openapi.sha256
+
+  container-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend image
+        run: docker build --tag stockbot-backend:ci .
+      - name: Check the application is included
+        run: docker run --rm --entrypoint python stockbot-backend:ci -c "from app.main import app; assert app"

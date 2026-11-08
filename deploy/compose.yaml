@@ -1,0 +1,76 @@
+name: stockbot
+
+services:
+  api:
+    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE to a verified image digest}
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers
+    environment: &backend_environment
+      STOCKBOT_ENV: production
+      STOCKBOT_LOCAL_ACCESS_KEY: ${STOCKBOT_LOCAL_ACCESS_KEY:?Set a private access key}
+      AUTHENTICATION_REQUIRED: "true"
+      DATABASE_URL: postgresql+psycopg://stockbot:${POSTGRES_PASSWORD:?Set a database password}@postgres:5432/stockbot
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      REALTIME_REDIS_URL: redis://redis:6379/2
+      STORAGE_ROOT: /app/data
+      CORS_ORIGINS: '["https://${STOCKBOT_DOMAIN:?Set the HTTPS domain}"]'
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    ports:
+      - "127.0.0.1:18080:8000"
+    volumes:
+      - market_data:/app/data
+
+  worker:
+    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE to a verified image digest}
+    restart: unless-stopped
+    command: celery -A app.workers.celery_app:celery_app worker --loglevel=INFO --concurrency=1
+    environment: *backend_environment
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    volumes:
+      - market_data:/app/data
+
+  frontend:
+    image: ${FRONTEND_IMAGE:?Set FRONTEND_IMAGE to a verified image digest}
+    restart: unless-stopped
+    environment:
+      STOCKBOT_API_BASE_URL: https://${STOCKBOT_DOMAIN:?Set the HTTPS domain}
+      STOCKBOT_WEBSOCKET_URL: wss://${STOCKBOT_DOMAIN:?Set the HTTPS domain}/api/v1/ws
+    ports:
+      - "127.0.0.1:18081:80"
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: stockbot
+      POSTGRES_USER: stockbot
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a database password}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stockbot -d stockbot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
+  market_data:
