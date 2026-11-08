@@ -1,0 +1,13 @@
+.git
+.pytest_cache
+__pycache__
+*.pyc
+data
+tests
+.venv
+.uv-cache
+.mypy_cache
+.ruff_cache
+graphify-out
+.DS_Store
+.env

@@ -1,0 +1,67 @@
+[project]
+name = "stockbot-backend"
+version = "0.1.0"
+description = "StockBOT backend platform foundation"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "alembic>=1.16,<2",
+    "celery[redis]>=5.5,<6",
+    "fastapi>=0.115,<1",
+    "httpx>=0.28.1",
+    "psycopg[binary]>=3.2,<4",
+    "pyarrow>=25.0.1",
+    "pydantic-settings>=2.10,<3",
+    "python-multipart>=0.0.20,<1",
+    "redis>=6,<7",
+    "sqlalchemy>=2.0,<3",
+    "tqdm>=4.70.0",
+    "uvicorn[standard]>=0.34,<1",
+    "xlsxwriter>=3.2,<4",
+]
+
+[dependency-groups]
+dev = [
+    "coverage>=7.8,<8",
+    "httpx>=0.28,<1",
+    "mypy>=1.15,<2",
+    "pytest>=8.3,<9",
+    "pytest-asyncio>=0.25,<1",
+    "ruff>=0.11,<1",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.coverage.run]
+branch = true
+source = ["app"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 85
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+exclude = ["build_algorithm_questions_clean.py", "build_trading_partner_questionnaire.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["B008", "E501"]
+
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_return_any = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["celery", "xlsxwriter"]
+ignore_missing_imports = true

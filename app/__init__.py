@@ -1,0 +1,1 @@
+"""StockBOT backend application package."""

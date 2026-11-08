@@ -1,0 +1,100 @@
+{
+  "contract_version": "1.2.0",
+  "endpoint": "/api/v1/ws?ticket=<single-use-ticket>",
+  "authentication": {
+    "session_create": "POST /api/v1/auth/session",
+    "session_status": "GET /api/v1/auth/session",
+    "session_delete": "DELETE /api/v1/auth/session",
+    "ticket_create": "POST /api/v1/realtime/tickets",
+    "ticket_ttl_seconds_default": 60,
+    "ticket_single_use": true
+  },
+  "client_messages": {
+    "subscribe": {
+      "action": "subscribe",
+      "channels": [
+        "backtest:<uuid>"
+      ]
+    },
+    "unsubscribe": {
+      "action": "unsubscribe",
+      "channel": "backtest:<uuid>"
+    },
+    "resume": {
+      "action": "resume",
+      "channel": "backtest:<uuid>",
+      "after_sequence": 42
+    },
+    "ping": {
+      "action": "ping"
+    },
+    "pong": {
+      "action": "pong"
+    }
+  },
+  "event_envelope": {
+    "contract_version": "1.2.0",
+    "event_id": "<durable-run-event-uuid>",
+    "sequence": 42,
+    "type": "backtest.progress",
+    "channel": "backtest:<uuid>",
+    "timestamp": "2026-08-05T10:15:30+00:00",
+    "data": {
+      "run_id": "<uuid>",
+      "mode": "PLATFORM_DEMO",
+      "processed_candles": 1200,
+      "estimated_candles": 4800,
+      "percent": 25,
+      "last_market_timestamp": "2026-08-05T10:15:00+05:30",
+      "accepted_signals": 12,
+      "rejected_evaluations": 1188,
+      "completed_trades": 10,
+      "wins": 6,
+      "losses": 4,
+      "equity_demo_units": "4.00000000",
+      "drawdown_demo_units": "-1.00000000",
+      "synthetic": true,
+      "unit": "DEMO_UNITS",
+      "financial_pnl_available": false
+    }
+  },
+  "event_types": [
+    "backtest.started",
+    "backtest.progress",
+    "backtest.trade_created",
+    "backtest.completed",
+    "backtest.failed",
+    "backtest.cancelled",
+    "backtest.journal_updated"
+  ],
+  "control_types": [
+    "subscribed",
+    "unsubscribed",
+    "pong",
+    "error",
+    "snapshot_required"
+  ],
+  "demo_invariants": {
+    "mode": "PLATFORM_DEMO",
+    "synthetic": true,
+    "unit": "DEMO_UNITS",
+    "financial_pnl_available": false
+  },
+  "resume": {
+    "authority": "PostgreSQL run_events",
+    "ordering": "strictly increasing sequence per run",
+    "deduplication": "event_id and sequence",
+    "overflow_control": "snapshot_required"
+  },
+  "backpressure": {
+    "bounded_queue_default": 256,
+    "overflow_close_code": 1013,
+    "recovery": "reconnect and resume from last applied sequence"
+  },
+  "authorization": {
+    "mvp_principal": "local-mvp-user",
+    "channel": "existing backtest UUID",
+    "denial_code": "SUBSCRIPTION_NOT_AUTHORIZED",
+    "resource_existence_hidden": true
+  }
+}

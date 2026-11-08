@@ -1,0 +1,22 @@
+name: Backend security checks
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "17 3 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv lock --check
+      - run: uv export --frozen --no-dev --output-file /tmp/stockbot-requirements.txt
+      - run: uvx --from pip-audit pip-audit --requirement /tmp/stockbot-requirements.txt

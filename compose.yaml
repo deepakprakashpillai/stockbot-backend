@@ -1,0 +1,73 @@
+services:
+  api:
+    build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment: &backend_environment
+      STOCKBOT_ENV: development
+      STOCKBOT_LOCAL_ACCESS_KEY: ${STOCKBOT_LOCAL_ACCESS_KEY:-stockbot-local-development-only}
+      LOG_LEVEL: INFO
+      DATABASE_URL: postgresql+psycopg://stockbot:stockbot@postgres:5432/stockbot
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      REALTIME_REDIS_URL: redis://redis:6379/2
+      STORAGE_ROOT: /app/data
+      CORS_ORIGINS: '["http://localhost:5173"]'
+      DEPENDENCY_TIMEOUT_SECONDS: "1.0"
+      DATASET_SYNC_VALIDATION_MAX_BYTES: "5242880"
+      DATASET_UPLOAD_MAX_BYTES: "262144000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./app:/app/app
+      - ./migrations:/app/migrations
+      - ./scripts:/app/scripts
+
+  worker:
+    build: .
+    command: celery -A app.workers.celery_app:celery_app worker --loglevel=INFO
+    environment: *backend_environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+      - ./app:/app/app
+      - ./migrations:/app/migrations
+      - ./scripts:/app/scripts
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: stockbot
+      POSTGRES_USER: stockbot
+      POSTGRES_PASSWORD: stockbot
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stockbot -d stockbot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:

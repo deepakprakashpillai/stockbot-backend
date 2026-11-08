@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+.venv/
+.uv-cache/
+.mypy_cache/
+.ruff_cache/
+.env
+data/
+graphify-out/
+.DS_Store
