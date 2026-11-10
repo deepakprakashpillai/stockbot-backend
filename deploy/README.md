@@ -17,9 +17,11 @@ workers stopped during migration. Verify readiness, authenticated browser and
 WebSocket access, queue recovery, dataset availability and limitations, and
 record release digests. Do not overwrite another application's proxy or ports.
 
-GitHub's manually started deployment workflows run the relevant CI checks,
-publish the checked image, and use a restricted SSH key to invoke the VPS
-release handler. Deploy only compatible frontend/backend versions. The backend
+A push to `main` starts deployment in the affected repository. GitHub runs
+its CI checks, publishes the checked image, and invokes the VPS release handler
+over restricted SSH. The Actions page also supports manual runs. If the other
+StockBOT deployment is holding the VPS lock, GitHub retries for up to 15 minutes.
+Keep frontend and backend versions compatible. The backend
 deployment stops new API requests, waits up to 600 seconds for its worker,
 applies migrations, synchronizes the registry and verifies readiness. A failed
 migration can leave the API and worker stopped and requires operator attention;

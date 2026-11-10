@@ -1,6 +1,8 @@
 name: Deploy backend
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -19,7 +21,7 @@ jobs:
     needs: verify
     environment: production
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     permissions:
       contents: read
       packages: write
@@ -52,4 +54,14 @@ jobs:
           RELEASE_SHA: ${{ github.sha }}
         run: |
           [[ "$VPS_HOST" =~ ^[a-zA-Z0-9.:-]+$ && "$VPS_USER" =~ ^[a-z_][a-z0-9_-]*$ && "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "backend $RELEASE_SHA"
+          for attempt in {1..60}; do
+            if output=$(ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "backend $RELEASE_SHA" 2>&1); then
+              printf '%s\n' "$output"
+              exit 0
+            fi
+            printf '%s\n' "$output" >&2
+            if [[ "$output" != 'Another StockBOT deployment is in progress.' || "$attempt" == 60 ]]; then
+              exit 1
+            fi
+            sleep 15
+          done
