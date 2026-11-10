@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -45,13 +45,19 @@ def settle_spread(
     monitored: MonitoredExit,
     assumptions: OptionSpreadAssumptions,
     session_data: Any,
+    *,
+    use_open: bool = False,
 ) -> SettledSpread:
     """Apply the existing exit fill and flat-cost convention exactly once."""
     selected = opened.selected
     buy_contract = selected.buy_contract
     sell_contract = selected.sell_contract
-    exit_buy_reference = Decimal(str(monitored.buy_candle.close))
-    exit_sell_reference = Decimal(str(monitored.sell_candle.close))
+    field = "open" if use_open else "close"
+    candle_key = (
+        opened.entry_timestamp + timedelta(minutes=5) if use_open else opened.entry_timestamp
+    )
+    exit_buy_reference = Decimal(str(getattr(monitored.buy_candle, field)))
+    exit_sell_reference = Decimal(str(getattr(monitored.sell_candle, field)))
     exit_long_sell = _fill(
         exit_buy_reference,
         assumptions,
@@ -88,7 +94,7 @@ def settle_spread(
         strike_price=Decimal(opened.atm_strike),
         option_type="CE",
         action="BUY",
-        entry_reference_close=Decimal(str(selected.buy_candles[opened.entry_timestamp].close)),
+        entry_reference_close=Decimal(str(getattr(selected.buy_candles[candle_key], field))),
         exit_reference_close=exit_buy_reference,
         entry_price=selected.buy_fill,
         exit_price=exit_long_sell,
@@ -104,7 +110,7 @@ def settle_spread(
         strike_price=Decimal(sell_strike),
         option_type="CE",
         action="SELL",
-        entry_reference_close=Decimal(str(selected.sell_candles[opened.entry_timestamp].close)),
+        entry_reference_close=Decimal(str(getattr(selected.sell_candles[candle_key], field))),
         exit_reference_close=exit_sell_reference,
         entry_price=selected.sell_fill,
         exit_price=exit_short_buy,

@@ -35,6 +35,7 @@ class OptionExitReason(StrEnum):
     TARGET_REACHED = "TARGET_REACHED"
     TREND_REVERSAL = "TREND_REVERSAL"
     SESSION_SQUARE_OFF = "SESSION_SQUARE_OFF"
+    VIX_SPIKE = "VIX_SPIKE"
 
 
 @dataclass(frozen=True)

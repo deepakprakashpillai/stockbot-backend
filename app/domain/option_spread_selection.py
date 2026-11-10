@@ -53,6 +53,8 @@ def select_entry_spread(
     entry_timestamp: datetime,
     atm_strike: int,
     assumptions: OptionSpreadAssumptions,
+    *,
+    use_open: bool = False,
 ) -> EntrySpreadSelection:
     """Apply the existing primary/fallback entry policy without changing its order."""
 
@@ -76,7 +78,13 @@ def select_entry_spread(
         sell_candles = _session_option_candles(
             session_data, option_candles_by_strike, sell_strike, "CE"
         )
-        if entry_timestamp not in buy_candles or entry_timestamp not in sell_candles:
+        buy_reference = option_reference(buy_candles.get(entry_timestamp), use_open=use_open)
+        sell_reference = option_reference(sell_candles.get(entry_timestamp), use_open=use_open)
+        if (
+            buy_reference is None
+            or sell_reference is None
+            or (use_open and (buy_contract is None or sell_contract is None))
+        ):
             attempted_width_details.append(
                 {
                     "width": width,
@@ -84,18 +92,16 @@ def select_entry_spread(
                     "sell_strike": sell_strike,
                     "buy_contract_available": buy_contract is not None,
                     "sell_contract_available": sell_contract is not None,
-                    "buy_price_available": entry_timestamp in buy_candles,
-                    "sell_price_available": entry_timestamp in sell_candles,
+                    "buy_price_available": buy_reference is not None,
+                    "sell_price_available": sell_reference is not None,
                 }
             )
             last_reason = "SYNCHRONIZED_OPTION_PRICE_MISSING"
-            if width_index == 0:
+            if width_index == 0 and not use_open:
                 break
             continue
         buy_tick = getattr(buy_contract, "tick_size", Decimal("0.05"))
         sell_tick = getattr(sell_contract, "tick_size", Decimal("0.05"))
-        buy_reference = Decimal(str(buy_candles[entry_timestamp].close))
-        sell_reference = Decimal(str(sell_candles[entry_timestamp].close))
         buy_fill = _fill(buy_reference, assumptions, buy=True, tick=buy_tick)
         sell_fill = _fill(sell_reference, assumptions, buy=False, tick=sell_tick)
         debit = (buy_fill - sell_fill).quantize(FINANCIAL_DECIMAL_QUANTUM)
@@ -107,8 +113,10 @@ def select_entry_spread(
                 "width": width,
                 "buy_strike": buy_strike,
                 "sell_strike": sell_strike,
-                "buy_reference_close": str(buy_reference),
-                "sell_reference_close": str(sell_reference),
+                ("buy_reference_open" if use_open else "buy_reference_close"): str(buy_reference),
+                ("sell_reference_open" if use_open else "sell_reference_close"): str(
+                    sell_reference
+                ),
                 "buy_fill": str(buy_fill),
                 "sell_fill": str(sell_fill),
                 "net_debit_points": str(debit),
@@ -157,3 +165,13 @@ def select_entry_spread(
             rejection_reason=last_reason,
         )
     return EntrySpreadSelection(None, widths, attempted_width_details, last_reason)
+
+
+def option_reference(candle: Any, *, use_open: bool = False) -> Decimal | None:
+    raw_price = getattr(candle, "open" if use_open else "close", None)
+    if raw_price is None:
+        return None
+    price = Decimal(str(raw_price))
+    if use_open and (not price.is_finite() or price <= 0):
+        return None
+    return price
