@@ -36,6 +36,7 @@ def check(
 
 def _hard_gate_signal_checks(decision: Any, parameters: dict[str, Any]) -> list[dict[str, Any]]:
     inputs = decision.inputs
+    uses_futures = inputs.get("vwap_comparison_source") == "futures_close"
     reason = decision.rejection_reason
     schedule_failed = reason in {"OUTSIDE_ENTRY_WINDOW", "EVALUATION_INTERVAL_NOT_REACHED"}
     input_failed = reason in {
@@ -83,15 +84,25 @@ def _hard_gate_signal_checks(decision: Any, parameters: dict[str, Any]) -> list[
             None if schedule_failed else not input_failed,
             reason=reason if input_failed else None,
             evidence={
-                key: inputs.get(key)
-                for key in (
-                    "close",
-                    "previous_session_high",
-                    "futures_vwap",
-                    "rsi",
-                    "india_vix",
-                    "previous_india_vix",
-                )
+                **(
+                    {
+                        "futures_close": inputs.get("futures_close"),
+                        "futures_observed_at": inputs.get("futures_observed_at"),
+                    }
+                    if uses_futures
+                    else {}
+                ),
+                **{
+                    key: inputs.get(key)
+                    for key in (
+                        "close",
+                        "previous_session_high",
+                        "futures_vwap",
+                        "rsi",
+                        "india_vix",
+                        "previous_india_vix",
+                    )
+                },
             },
         ),
         check(
@@ -106,8 +117,10 @@ def _hard_gate_signal_checks(decision: Any, parameters: dict[str, Any]) -> list[
         ),
         check(
             "vwap_gate",
-            "Spot close is strictly above futures VWAP",
-            inputs.get("close"),
+            "Futures close is strictly above futures VWAP"
+            if uses_futures
+            else "Spot close is strictly above futures VWAP",
+            inputs.get("futures_close" if uses_futures else "close"),
             ">",
             inputs.get("futures_vwap"),
             vwap_passed,

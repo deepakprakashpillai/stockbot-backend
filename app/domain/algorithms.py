@@ -550,6 +550,33 @@ class BullCallSpreadHardGateParameters(BullCallSpreadSignalParameters):
     )
 
 
+class BullCallSpreadFuturesParameters(BullCallSpreadHardGateParameters):
+    """V1.3 corrects only the instrument used in the two VWAP comparisons."""
+
+    vwap_weight: Literal[0] = Field(
+        default=0,
+        json_schema_extra=ui(
+            "VWAP hard gate",
+            "Signal scoring",
+            "Futures close above futures VWAP is mandatory and contributes no score points.",
+            order=25,
+            editable=False,
+        ),
+    )
+    trend_spread_decline_percent: float = Field(
+        default=25,
+        gt=0,
+        lt=100,
+        json_schema_extra=ui(
+            "Trend spread decline",
+            "Exit management",
+            "Combined with futures close below futures VWAP.",
+            order=52,
+            unit="%",
+        ),
+    )
+
+
 class PlatformDemoParameters(BaseModel):
     """Synthetic parameters used only to prove the platform pipeline."""
 
@@ -1290,6 +1317,86 @@ BULL_CALL_SPREAD = replace(
     ),
 )
 
+# Keep BULL_CALL_SPREAD as the immutable V1.2 control for existing callers/replays.
+# The catalog's latest version is the narrowly scoped, user-authorized Q10/L04 fix.
+FUTURES_BULL_CALL_SPREAD = replace(
+    BULL_CALL_SPREAD,
+    code_version="1.3.0-bull-call-spread-v1",
+    schema_version=4,
+    description="Bull Call Spread research with futures-to-futures VWAP comparisons and estimated OHLC fills.",
+    parameter_model=BullCallSpreadFuturesParameters,
+    fixed_rules={
+        **BULL_CALL_SPREAD.fixed_rules,
+        "vwap_hard_gate": "nifty_futures_close_strictly_above_futures_vwap",
+        "vwap_comparison_price": "nifty_futures_close",
+        "trend_reversal_price": "nifty_futures_close",
+    },
+    templates=(
+        AlgorithmTemplate(
+            key="futures_vwap_correction",
+            name="Bull Call Spread V1.3 — futures VWAP correction",
+            description="Corrects entry and trend-reversal price comparisons; retains V1.2 scoring and thresholds.",
+            experimental=True,
+            parameters=BullCallSpreadFuturesParameters().model_dump(mode="json"),
+        ),
+    ),
+    documentation=replace(
+        BULL_CALL_SPREAD.documentation,
+        purpose="Research the Q10/L04 futures comparison correction with existing V1.2 parameters.",
+        diagnostic_schema_version="4",
+        rules=(
+            *BULL_CALL_SPREAD.documentation.rules,
+            AlgorithmRule(
+                key="futures-vwap-comparison-correction",
+                statement="Use completed futures close versus futures VWAP for entry and trend reversal; retain spot for PDH and strikes.",
+                source_document="Bull_Call_Spread_Algorithm_Questions.docx",
+                source_reference="Q10; partner response L04; Deepak's 11 November request to fix the identified mismatch",
+                status="EXPERIMENT_ONLY",
+                implemented_code_version="1.3.0-bull-call-spread-v1",
+                test_references=(
+                    "tests/test_futures_vwap_correction.py",
+                    "tests/test_financial_run_persistence.py",
+                ),
+                effective_date="2026-11-11",
+            ),
+        ),
+        limitations=(
+            *BULL_CALL_SPREAD.documentation.limitations,
+            "Only the VWAP instrument mismatch is corrected; this is not the consolidated November strategy.",
+            "Continuous futures contract rollover remains unverified.",
+        ),
+        inputs=(
+            *BULL_CALL_SPREAD.documentation.inputs,
+            DocumentationInput(
+                "futures_close",
+                "NIFTY futures close",
+                "futures_vwap",
+                "price",
+                True,
+                "Completed close from the same futures history used to calculate VWAP; checked at preflight.",
+            ),
+        ),
+        logic_steps=tuple(
+            replace(
+                step, description="Require completed futures close strictly above futures VWAP."
+            )
+            if step.id == "vwap_gate"
+            else replace(
+                step,
+                description="Read spot, synchronized futures close/VWAP, VIX, and warm-up history.",
+            )
+            if step.id == "market_input"
+            else replace(
+                step,
+                description="Apply stop, target, futures-below-futures-VWAP trend reversal, and hard exit.",
+            )
+            if step.id == "spread_management"
+            else step
+            for step in BULL_CALL_SPREAD.documentation.logic_steps
+        ),
+    ),
+)
+
 # Existing 1.0.0 runs remain reproducible and visibly carry the pre-correction
 # lifecycle label. New versions use the corrected 1.1.0 engine contract.
 PRE_CORRECTION_BULL_CALL_SPREAD = replace(
@@ -1396,7 +1503,7 @@ PLATFORM_DEMO = AlgorithmDefinition(
 )
 
 ALGORITHM_REGISTRY = {
-    BULL_CALL_SPREAD.key: BULL_CALL_SPREAD,
+    FUTURES_BULL_CALL_SPREAD.key: FUTURES_BULL_CALL_SPREAD,
     PLATFORM_DEMO.key: PLATFORM_DEMO,
 }
 
@@ -1411,6 +1518,7 @@ ALGORITHM_VERSION_REGISTRY = {
         WEIGHTED_BULL_CALL_SPREAD.code_version,
     ): WEIGHTED_BULL_CALL_SPREAD,
     (BULL_CALL_SPREAD.key, BULL_CALL_SPREAD.code_version): BULL_CALL_SPREAD,
+    (FUTURES_BULL_CALL_SPREAD.key, FUTURES_BULL_CALL_SPREAD.code_version): FUTURES_BULL_CALL_SPREAD,
     (PLATFORM_DEMO.key, PLATFORM_DEMO.code_version): PLATFORM_DEMO,
 }
 

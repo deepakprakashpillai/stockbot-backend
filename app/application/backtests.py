@@ -101,6 +101,7 @@ class BacktestService:
             "1.0.0-bull-call-spread-v1",
             "1.1.0-bull-call-spread-v1",
             "1.2.0-bull-call-spread-v1",
+            "1.3.0-bull-call-spread-v1",
         }:
             return "OPTION_SPREAD_SIMULATION"
         return "SIGNAL_ONLY"
@@ -158,7 +159,11 @@ class BacktestService:
             mode == "OPTION_SPREAD_SIMULATION"
             and not missing
             and algorithm_version.code_version
-            not in {"1.1.0-bull-call-spread-v1", "1.2.0-bull-call-spread-v1"}
+            not in {
+                "1.1.0-bull-call-spread-v1",
+                "1.2.0-bull-call-spread-v1",
+                "1.3.0-bull-call-spread-v1",
+            }
         ):
             supported_session_dates: list[str] = []
             unsupported_session_reasons: list[str] = []
@@ -306,7 +311,11 @@ class BacktestService:
             mode == "OPTION_SPREAD_SIMULATION"
             and not missing
             and algorithm_version.code_version
-            in {"1.1.0-bull-call-spread-v1", "1.2.0-bull-call-spread-v1"}
+            in {
+                "1.1.0-bull-call-spread-v1",
+                "1.2.0-bull-call-spread-v1",
+                "1.3.0-bull-call-spread-v1",
+            }
         ):
             try:
                 bundle_key = dataset.profile.get("derivatives_storage_key")
@@ -479,9 +488,8 @@ class BacktestService:
         demo_execution = DemoExecutionAssumptions() if mode == "PLATFORM_DEMO" else None
         option_execution = None
         if mode == "OPTION_SPREAD_SIMULATION":
-            option_parameters = BullCallSpreadSignalParameters.model_validate(
-                algorithm_version.parameters
-            )
+            option_parameters = definition.configure(algorithm_version.parameters).parameters
+            assert isinstance(option_parameters, BullCallSpreadSignalParameters)
             option_execution = OptionSpreadAssumptions.from_parameters(
                 option_parameters, starting_capital=starting_capital
             )

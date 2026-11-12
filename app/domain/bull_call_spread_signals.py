@@ -7,11 +7,13 @@ from datetime import date, datetime, time
 from typing import Any, cast
 
 from app.domain.algorithms import (
+    BullCallSpreadFuturesParameters,
     BullCallSpreadSignalParameters,
     ConfiguredAlgorithm,
     LegacyBullCallSpreadSignalParameters,
     ScoreModel,
 )
+from app.domain.futures_comparison import futures_comparison_available
 from app.domain.indicators import WilderRsi
 from app.domain.signal_models import EXCHANGE_OFFSET, MarketCandle, SignalDecision
 
@@ -43,7 +45,11 @@ def evaluate_bull_call_spread(
     # V1 or archived-replay branch below.
     parameters = cast(Any, parameters)
     legacy = isinstance(parameters, LegacyBullCallSpreadSignalParameters)
-    hard_gates = algorithm.code_version == "1.2.0-bull-call-spread-v1"
+    futures_comparison = isinstance(parameters, BullCallSpreadFuturesParameters)
+    hard_gates = algorithm.code_version in {
+        "1.2.0-bull-call-spread-v1",
+        "1.3.0-bull-call-spread-v1",
+    }
     unavailable_score = None if hard_gates else 0
     indicator = WilderRsi(14 if legacy else parameters.rsi_period)
     current_session: date | None = None
@@ -84,6 +90,17 @@ def evaluate_bull_call_spread(
                 else "primary_weighted_10"
             ),
         }
+        comparison_price = candle.futures_close if futures_comparison else candle.close
+        if futures_comparison:
+            inputs.update(
+                {
+                    "futures_close": candle.futures_close,
+                    "futures_observed_at": candle.futures_observed_at.isoformat()
+                    if candle.futures_observed_at
+                    else None,
+                    "vwap_comparison_source": "futures_close",
+                }
+            )
         if window is None:
             yield SignalDecision(
                 candle.timestamp,
@@ -143,7 +160,9 @@ def evaluate_bull_call_spread(
                     inputs,
                 )
                 continue
-            if candle.futures_vwap is None:
+            if candle.futures_vwap is None or (
+                futures_comparison and not futures_comparison_available(candle)
+            ):
                 yield SignalDecision(
                     candle.timestamp,
                     session,
@@ -154,7 +173,8 @@ def evaluate_bull_call_spread(
                     inputs,
                 )
                 continue
-            vwap_positive = candle.close > candle.futures_vwap
+            assert comparison_price is not None
+            vwap_positive = comparison_price > candle.futures_vwap
             inputs["futures_vwap_gate_passed"] = vwap_positive
             if not vwap_positive:
                 yield SignalDecision(
@@ -209,7 +229,8 @@ def evaluate_bull_call_spread(
         ) * 100
         inputs["vix_decline_percent"] = vix_decline
         pdh_positive = candle.close > previous_session_high
-        vwap_positive = candle.close > candle.futures_vwap
+        assert comparison_price is not None
+        vwap_positive = comparison_price > candle.futures_vwap
         rsi_positive = rsi > parameters.rsi_threshold
         vix_gate = (
             candle.india_vix < parameters.vix_gate_threshold

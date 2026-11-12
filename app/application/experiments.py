@@ -73,11 +73,12 @@ class ExperimentService:
         if (
             baseline is None
             or baseline.archived
-            or baseline.code_version != "1.2.0-bull-call-spread-v1"
+            or baseline.code_version
+            not in {"1.2.0-bull-call-spread-v1", "1.3.0-bull-call-spread-v1"}
         ):
             raise ExperimentServiceError(
                 "EXPERIMENT_CORRECTED_ENGINE_REQUIRED",
-                "Select an available V1.2 research baseline.",
+                "Select an available V1.2 or V1.3 research baseline.",
                 409,
             )
         definition = get_algorithm(
@@ -193,7 +194,7 @@ class ExperimentService:
                 "The baseline algorithm version does not exist.",
                 404,
             )
-        if baseline.code_version != "1.2.0-bull-call-spread-v1":
+        if baseline.code_version not in {"1.2.0-bull-call-spread-v1", "1.3.0-bull-call-spread-v1"}:
             raise ExperimentServiceError(
                 "EXPERIMENT_CORRECTED_ENGINE_REQUIRED",
                 "Experiments require the corrected Bull Call Spread engine.",
@@ -353,6 +354,7 @@ class ExperimentService:
                 {**baseline.parameters, plan.parameter_key: value},
                 baseline.id,
                 commit=False,
+                code_version=baseline.code_version,
             )
             versions.append((version, value))
         backtests = BacktestService(self.session, self.storage, self.settings, self.publisher)

@@ -14,9 +14,11 @@ from typing import Any
 from app.domain.algorithms import (
     BULL_CALL_SPREAD,
     AlgorithmDefinition,
+    BullCallSpreadFuturesParameters,
     BullCallSpreadSignalParameters,
 )
 from app.domain.backtests import MarketCandle, evaluate_chronologically
+from app.domain.futures_comparison import futures_comparison_available
 from app.domain.trading_calendar import (
     NSE_FO_CALENDAR,
     NSE_FO_CALENDAR_SOURCES,
@@ -166,6 +168,10 @@ def analyze_derivatives_coverage(
             if candle.futures_vwap is None
             or candle.india_vix is None
             or candle.previous_india_vix is None
+            or (
+                isinstance(configured_algorithm.parameters, BullCallSpreadFuturesParameters)
+                and not futures_comparison_available(candle)
+            )
         ]
         if missing_inputs:
             exclusions.append(

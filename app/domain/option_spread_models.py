@@ -8,7 +8,7 @@ from datetime import datetime, time
 from decimal import Decimal
 from enum import StrEnum
 
-from app.domain.algorithms import BullCallSpreadSignalParameters
+from app.domain.algorithms import BullCallSpreadFuturesParameters, BullCallSpreadSignalParameters
 
 INR_RESULT_UNIT = "INR"
 FINANCIAL_DECIMAL_QUANTUM = Decimal("0.01")
@@ -140,6 +140,7 @@ class OptionSpreadAssumptions:
     atm_increment: int = 50
     same_day_weekly_expiry: bool = True
     max_trades_per_day: int = 1
+    use_futures_price: bool = False
 
     @classmethod
     def from_parameters(
@@ -163,10 +164,12 @@ class OptionSpreadAssumptions:
             atm_increment=parameters.atm_increment,
             same_day_weekly_expiry=parameters.same_day_weekly_expiry,
             max_trades_per_day=parameters.max_trades_per_day,
+            use_futures_price=isinstance(parameters, BullCallSpreadFuturesParameters),
         )
 
     def snapshot(self) -> dict[str, object]:
         return {
+            **({"vwap_comparison_price": "futures_close"} if self.use_futures_price else {}),
             "adapter_version": self.adapter_version,
             "pricing_quality": self.pricing_quality,
             "executable_quotes": self.executable_quotes,

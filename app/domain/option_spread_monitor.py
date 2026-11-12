@@ -9,6 +9,7 @@ from decimal import Decimal
 from typing import Any
 
 from app.domain.decision_checks import check
+from app.domain.futures_comparison import futures_comparison_available
 from app.domain.option_spread_models import (
     FINANCIAL_DECIMAL_QUANTUM,
     OpenPositionDataGapError,
@@ -66,8 +67,12 @@ def monitor_spread_exit(
             missing.append("futures_vwap")
         if candle.india_vix is None:
             missing.append("india_vix")
+        if assumptions.use_futures_price and not futures_comparison_available(candle):
+            missing.append("synchronized_futures_close")
         if missing:
             raise OpenPositionDataGapError(timestamp, missing)
+        comparison_price = candle.futures_close if assumptions.use_futures_price else candle.close
+        price_label = "Futures" if assumptions.use_futures_price else "Spot"
         current_buy = buy_candles[timestamp]
         current_sell = sell_candles[timestamp]
         current_spread = (
@@ -79,7 +84,7 @@ def monitor_spread_exit(
         elif current_spread >= target_level:
             exit_reason = OptionExitReason.TARGET_REACHED
         elif (
-            Decimal(str(candle.close)) < Decimal(str(candle.futures_vwap))
+            Decimal(str(comparison_price)) < Decimal(str(candle.futures_vwap))
             and current_spread < trend_level
         ):
             exit_reason = OptionExitReason.TREND_REVERSAL
@@ -99,7 +104,17 @@ def monitor_spread_exit(
             target_level_points=str(target_level),
             trend_reversal_level_points=str(trend_level),
             hard_exit_time=assumptions.square_off_time.isoformat(),
-            evidence_version="position-checks-v2",
+            evidence_version="position-checks-v3"
+            if assumptions.use_futures_price
+            else "position-checks-v2",
+            **(
+                {
+                    "futures_close": str(candle.futures_close),
+                    "vwap_comparison_source": "futures_close",
+                }
+                if assumptions.use_futures_price
+                else {}
+            ),
             action=exit_reason.value if exit_reason is not None else "HOLD",
             checks=[
                 check(
@@ -120,23 +135,23 @@ def monitor_spread_exit(
                 ),
                 check(
                     "trend_price",
-                    "Spot is below futures VWAP",
-                    str(candle.close),
+                    f"{price_label} is below futures VWAP",
+                    str(comparison_price),
                     "<",
                     str(candle.futures_vwap),
-                    Decimal(str(candle.close)) < Decimal(str(candle.futures_vwap))
+                    Decimal(str(comparison_price)) < Decimal(str(candle.futures_vwap))
                     if stop_level < current_spread < target_level
                     else None,
                 ),
                 check(
                     "trend_spread",
-                    "Spread is below trend threshold (AND spot below VWAP)",
+                    f"Spread is below trend threshold (AND {price_label.lower()} below VWAP)",
                     str(current_spread),
                     "<",
                     str(trend_level),
                     current_spread < trend_level
                     if stop_level < current_spread < target_level
-                    and Decimal(str(candle.close)) < Decimal(str(candle.futures_vwap))
+                    and Decimal(str(comparison_price)) < Decimal(str(candle.futures_vwap))
                     else None,
                 ),
                 check(

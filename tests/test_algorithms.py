@@ -24,6 +24,7 @@ from app.db.models.algorithms import Algorithm, AlgorithmVersion
 from app.db.repositories.algorithms import AlgorithmRepository
 from app.domain.algorithms import (
     BULL_CALL_SPREAD,
+    FUTURES_BULL_CALL_SPREAD,
     LEGACY_BULL_CALL_SPREAD,
     PLATFORM_DEMO,
     WEIGHTED_BULL_CALL_SPREAD,
@@ -39,9 +40,13 @@ from tests.conftest import make_test_settings
 
 def test_registry_exposes_primary_document_v1_and_preserves_legacy_code() -> None:
     definition = get_algorithm("bull_call_spread")
-    assert definition is BULL_CALL_SPREAD
-    assert [template.key for template in definition.templates] == ["partner_q04_defaults"]
-    assert definition.code_version == "1.2.0-bull-call-spread-v1"
+    assert definition is FUTURES_BULL_CALL_SPREAD
+    assert [template.key for template in definition.templates] == ["futures_vwap_correction"]
+    assert definition.code_version == "1.3.0-bull-call-spread-v1"
+    assert (
+        get_algorithm("bull_call_spread", code_version=BULL_CALL_SPREAD.code_version)
+        is BULL_CALL_SPREAD
+    )
     assert (
         get_algorithm(
             "bull_call_spread", code_version="1.1.0-bull-call-spread-v1", include_inactive=True
@@ -234,7 +239,7 @@ def test_registry_sync_and_version_creation_are_normalized(monkeypatch) -> None:
 
     assert version.name == "First research version"
     assert version.creator_context == {"type": "authenticated_local", "principal": "local-mvp-user"}
-    assert version.code_version == "1.2.0-bull-call-spread-v1"
+    assert version.code_version == "1.3.0-bull-call-spread-v1"
 
 
 def test_compatibility_is_strict_and_archive_is_idempotent(monkeypatch) -> None:

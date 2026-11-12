@@ -67,7 +67,9 @@ def prepare_run_inputs(
     snapshot_engine_version = run.snapshot.get("engine_version")
     snapshot_code_version = snapshot_algorithm.get("code_version")
     engine_compatible = (
-        snapshot_engine_version in {"1.2.2-session-pipeline", ENGINE_VERSION}
+        snapshot_engine_version == ENGINE_VERSION
+        if snapshot_code_version == "1.3.0-bull-call-spread-v1"
+        else snapshot_engine_version in {"1.2.2-session-pipeline", ENGINE_VERSION}
         if snapshot_code_version == "1.2.0-bull-call-spread-v1"
         else snapshot_engine_version
         in {

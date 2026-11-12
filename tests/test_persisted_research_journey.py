@@ -31,9 +31,12 @@ from app.db.models.backtests import (
 from app.db.models.datasets import Dataset
 from app.db.models.jobs import JobDispatch
 from app.db.repositories.backtests import BacktestRepository
+from app.domain.algorithms import BULL_CALL_SPREAD, FUTURES_BULL_CALL_SPREAD
+from app.infrastructure.datasets.derivatives_bundle import load_derivatives_bundle
 from app.infrastructure.datasets.storage import LocalDatasetStorage
 from app.main import create_app
 from tests.conftest import make_test_settings
+from tests.market_fixture import market_bundle
 from tests.test_backtests import dataset
 
 
@@ -137,6 +140,117 @@ def test_saved_demo_journey_exposes_reconciled_records_and_exact_history(persist
     assert client.post(f"{base}/cancel").status_code == 409
 
 
+def test_corrected_spread_runs_through_catalog_preflight_snapshot_worker_and_http(persisted_run):
+    client, factory, _demo_id, settings = persisted_run
+    bundle = market_bundle(settings.storage_root / "corrected-market", rising_futures=True)
+    manifest = load_derivatives_bundle(bundle)
+    spot = manifest["components"]["spot"]
+    with factory() as session:
+        corrected = session.scalar(
+            select(AlgorithmVersion).where(
+                AlgorithmVersion.code_version == FUTURES_BULL_CALL_SPREAD.code_version
+            )
+        )
+        assert corrected is not None
+        stored = dataset(manifest["capabilities"])
+        stored.checksum = manifest["bundle_checksum"]
+        stored.storage_key = "corrected-market/spot/nifty_spot_5min.csv"
+        stored.schema_profile = "nifty_derivatives_bundle_v2"
+        stored.session_dates = spot["session_dates"]
+        stored.session_count = len(spot["session_dates"])
+        stored.coverage_start = datetime.fromisoformat(spot["coverage_start"])
+        stored.coverage_end = datetime.fromisoformat(spot["coverage_end"])
+        stored.profile = {
+            "derivatives_storage_key": "corrected-market",
+            "bundle_checksum": manifest["bundle_checksum"],
+            "spot_checksum": spot["checksum"],
+        }
+        session.add(Dataset(id=stored.dataset_id, name="Corrected futures fixture"))
+        session.flush()
+        session.add(stored)
+        session.commit()
+        version_id, dataset_id = corrected.id, stored.id
+    payload = {
+        "dataset_version_id": str(dataset_id),
+        "algorithm_version_id": str(version_id),
+        "start_date": "2025-07-21",
+        "end_date": "2025-07-21",
+        "starting_capital": "500000",
+        "warning_acknowledged": True,
+    }
+    review = client.post("/api/v1/backtests/preflight", json=payload)
+    assert review.status_code == 200, review.text
+    assert review.json()["allowed"] is True, review.json()
+    assert review.json()["included_session_count"] == 1
+    created = client.post("/api/v1/backtests", json=payload)
+    assert created.status_code == 202, created.text
+    from uuid import UUID
+
+    run_id = UUID(created.json()["id"])
+    with factory() as session:
+        run = session.get(BacktestRun, run_id)
+        assert run.snapshot["algorithm"]["code_version"] == FUTURES_BULL_CALL_SPREAD.code_version
+        assert (
+            run.snapshot["assumptions"]["option_execution"]["vwap_comparison_price"]
+            == "futures_close"
+        )
+        assert (
+            BacktestService(session, LocalDatasetStorage(settings.storage_root), settings).execute(
+                run_id
+            )["status"]
+            == "COMPLETED"
+        )
+    response = client.get(f"/api/v1/backtests/{run_id}/trades")
+    assert response.status_code == 200, response.text
+    assert len(response.json()["items"]) == 1
+    with factory() as session:
+        checks = list(
+            session.scalars(
+                select(JournalEvent).where(
+                    JournalEvent.run_id == run_id, JournalEvent.event_type == "POSITION_CHECK"
+                )
+            )
+        )
+        assert checks and all(
+            item.payload["vwap_comparison_source"] == "futures_close" for item in checks
+        )
+
+
+def test_registry_sync_adds_correction_without_rewriting_old_versions(persisted_run):
+    _client, factory, _run_id, _settings = persisted_run
+    with factory() as session:
+        old = AlgorithmVersion(
+            algorithm_key=BULL_CALL_SPREAD.key,
+            version_number=2,
+            name="Preserved V1.2",
+            code_version=BULL_CALL_SPREAD.code_version,
+            schema_version=BULL_CALL_SPREAD.schema_version,
+            parameters=BULL_CALL_SPREAD.templates[0].parameters,
+            creator_context={"type": "fixture"},
+        )
+        session.add(old)
+        session.commit()
+        old_id, old_parameters = old.id, dict(old.parameters)
+        sync_registry(session)
+        sync_registry(session)
+        session.expire_all()
+        preserved = session.get(AlgorithmVersion, old_id)
+        assert preserved.code_version == BULL_CALL_SPREAD.code_version
+        assert preserved.parameters == old_parameters
+        assert (
+            len(
+                list(
+                    session.scalars(
+                        select(AlgorithmVersion).where(
+                            AlgorithmVersion.code_version == FUTURES_BULL_CALL_SPREAD.code_version
+                        )
+                    )
+                )
+            )
+            == 1
+        )
+
+
 def test_legacy_complete_run_with_missing_coverage_dates_does_not_claim_zero_sessions(
     persisted_run,
 ):
@@ -226,13 +340,27 @@ def test_export_round_trip_verifies_download_and_rejects_corruption(persisted_ru
     assert client.get(download).status_code == 409
 
 
+@pytest.mark.parametrize("definition", [BULL_CALL_SPREAD, FUTURES_BULL_CALL_SPREAD])
 def test_experiment_api_rolls_back_partial_batch_then_starts_without_duplicates(
-    persisted_run, monkeypatch
+    persisted_run, monkeypatch, definition
 ):
     client, factory, run_id, _settings = persisted_run
     with factory() as session:
+        if definition is BULL_CALL_SPREAD:
+            session.add(
+                AlgorithmVersion(
+                    algorithm_key=definition.key,
+                    version_number=2,
+                    name="Legacy experiment baseline",
+                    code_version=definition.code_version,
+                    schema_version=definition.schema_version,
+                    parameters=definition.templates[0].parameters,
+                    creator_context={"type": "fixture"},
+                )
+            )
+            session.commit()
         baseline = session.scalar(
-            select(AlgorithmVersion).where(AlgorithmVersion.algorithm_key == "bull_call_spread")
+            select(AlgorithmVersion).where(AlgorithmVersion.code_version == definition.code_version)
         )
         dataset_id = BacktestRepository(session).get_run(run_id).dataset_version_id
         baseline_id = baseline.id
@@ -290,6 +418,17 @@ def test_experiment_api_rolls_back_partial_batch_then_starts_without_duplicates(
     started = client.post(f"/api/v1/experiments/{plan_id}/start")
     assert started.status_code == 202, started.text
     assert len(started.json()["runs"]) == 2
+    with factory() as session:
+        saved_runs = list(
+            session.scalars(
+                select(BacktestRun).where(BacktestRun.mode == "OPTION_SPREAD_SIMULATION")
+            )
+        )
+        assert len(saved_runs) == 2
+        assert all(
+            run.snapshot["algorithm"]["code_version"] == definition.code_version
+            for run in saved_runs
+        )
     repeated = client.post(f"/api/v1/experiments/{plan_id}/start")
     assert [row["id"] for row in repeated.json()["runs"]] == [
         row["id"] for row in started.json()["runs"]

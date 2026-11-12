@@ -14,10 +14,12 @@ from app.db.repositories.algorithms import AlgorithmRepository
 from app.db.repositories.datasets import DatasetRepository
 from app.domain.algorithms import (
     ALGORITHM_REGISTRY,
-    BULL_CALL_SPREAD,
     PLATFORM_DEMO,
     AlgorithmDefinition,
     get_algorithm,
+)
+from app.domain.algorithms import (
+    FUTURES_BULL_CALL_SPREAD as BULL_CALL_SPREAD,
 )
 
 
@@ -119,7 +121,8 @@ def sync_registry(session: Session) -> int:
                 version_number=repository.next_version_number(BULL_CALL_SPREAD.key),
                 name=BULL_CALL_SPREAD.templates[0].name,
                 notes=(
-                    "Partner-review candidate with PDH/VWAP hard gates and five-point RSI/VIX confirmation. "
+                    "Q10/L04 correction: futures close versus futures VWAP at entry and trend reversal. "
+                    "Existing V1.2 scores, thresholds and other policies retained; not the full November specification. "
                     "Historical option fills remain estimated candle-close outcomes."
                 ),
                 code_version=BULL_CALL_SPREAD.code_version,
@@ -171,13 +174,27 @@ class AlgorithmService:
         parent_version_id: UUID | None,
         *,
         commit: bool = True,
+        code_version: str | None = None,
     ) -> AlgorithmVersion:
-        definition = self.definition(key)
-        valid, normalized, errors = self.validate(key, parameters)
-        if not valid or normalized is None:
+        definition = get_algorithm(key, code_version=code_version, include_inactive=True)
+        if definition is None:
+            raise AlgorithmServiceError("ALGORITHM_NOT_FOUND", "Algorithm not found.", 404)
+        try:
+            normalized = definition.configure(parameters).parameters.model_dump(mode="json")
+        except ValidationError as exc:
             raise AlgorithmServiceError(
-                "ALGORITHM_PARAMETERS_INVALID", "Parameters are invalid.", 422, errors
-            )
+                "ALGORITHM_PARAMETERS_INVALID",
+                "Parameters are invalid.",
+                422,
+                [
+                    {
+                        "field": ".".join(str(part) for part in error["loc"]),
+                        "message": error["msg"],
+                        "type": error["type"],
+                    }
+                    for error in exc.errors(include_url=False)
+                ],
+            ) from exc
         parent = self.repository.get_version(parent_version_id) if parent_version_id else None
         if parent_version_id and (parent is None or parent.algorithm_key != key):
             raise AlgorithmServiceError("PARENT_VERSION_INVALID", "Parent version is invalid.", 422)

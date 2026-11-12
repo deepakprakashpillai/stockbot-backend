@@ -7,18 +7,27 @@ import pytest
 from app.application import backtest_execution, backtests
 from app.application.backtests import BacktestService
 from app.db.models.backtests import EquityPoint, SignalEvaluation, Trade
-from app.domain.algorithms import BULL_CALL_SPREAD
+from app.domain.algorithms import BULL_CALL_SPREAD, FUTURES_BULL_CALL_SPREAD
 from app.domain.backtests import ENGINE_VERSION
-from app.infrastructure.datasets.derivatives_bundle import load_derivatives_bundle
+from app.infrastructure.datasets.derivatives_bundle import (
+    load_derivatives_bundle,
+)
 from tests.market_fixture import market_bundle
 from tests.test_backtests import algorithm, dataset
 
 
-@pytest.mark.parametrize("engine_version", ["1.2.2-session-pipeline", ENGINE_VERSION])
+@pytest.mark.parametrize(
+    "engine_version,definition",
+    [
+        ("1.2.2-session-pipeline", BULL_CALL_SPREAD),
+        (ENGINE_VERSION, BULL_CALL_SPREAD),
+        (ENGINE_VERSION, FUTURES_BULL_CALL_SPREAD),
+    ],
+)
 def test_estimated_run_keeps_signal_ids_through_completion_and_persists_safe_results(
-    monkeypatch, tmp_path, engine_version
+    monkeypatch, tmp_path, engine_version, definition
 ):
-    bundle = market_bundle(tmp_path)
+    bundle = market_bundle(tmp_path, rising_futures=definition is FUTURES_BULL_CALL_SPREAD)
     manifest = load_derivatives_bundle(bundle)
     stored, configured = dataset(manifest["capabilities"]), algorithm()
     stored.profile = {"spot_checksum": manifest["components"]["spot"]["checksum"]}
@@ -45,7 +54,7 @@ def test_estimated_run_keeps_signal_ids_through_completion_and_persists_safe_res
             "algorithm": {
                 "key": configured.algorithm_key,
                 "version_id": str(configured.id),
-                "code_version": BULL_CALL_SPREAD.code_version,
+                "code_version": definition.code_version,
                 "parameters": configured.parameters,
             },
             "range": {"start_date": "2025-07-21", "end_date": "2025-07-21"},
@@ -169,6 +178,10 @@ def test_estimated_run_keeps_signal_ids_through_completion_and_persists_safe_res
     trades = [item for item in session.added if isinstance(item, Trade)]
     equity = [item for item in session.added if isinstance(item, EquityPoint)]
     assert trades and equity and repository.journal and repository.days
+    if definition is FUTURES_BULL_CALL_SPREAD:
+        checks = [item for item in repository.journal if item.event_type == "POSITION_CHECK"]
+        assert checks
+        assert all(item.payload["vwap_comparison_source"] == "futures_close" for item in checks)
     assert (
         next(payload for name, payload in repository.events if name == "BACKTEST_STARTED")[
             "engine_version"

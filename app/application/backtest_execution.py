@@ -290,7 +290,8 @@ def execute_backtest(self: BacktestService, run_id: UUID) -> dict[str, object]:
             if derivatives_provider is None:
                 raise ValueError("The derivatives bundle was not initialized.")
             starting_capital = Decimal(str(run.starting_capital or "500000.00"))
-            option_parameters = BullCallSpreadSignalParameters.model_validate(parameters)
+            option_parameters = configured_algorithm.parameters
+            assert isinstance(option_parameters, BullCallSpreadSignalParameters)
             option_assumptions = OptionSpreadAssumptions.from_parameters(
                 option_parameters, starting_capital=starting_capital
             )

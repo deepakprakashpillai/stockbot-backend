@@ -206,7 +206,20 @@ def _bull_call_spread_v1(decision: SignalDecision, parameters: dict[str, Any]) -
     )
     return {
         "evidence_version": "bull-call-spread-checks-v2",
-        "market_context": contexts,
+        "market_context": contexts
+        + (
+            (
+                _context(
+                    "futures_close",
+                    "NIFTY futures close",
+                    inputs.get("futures_close"),
+                    None,
+                    "futures_dataset",
+                ),
+            )
+            if inputs.get("vwap_comparison_source") == "futures_close"
+            else ()
+        ),
         "evaluation_steps": signal_checks(decision, parameters),
         "limitations": (
             "Historical option fills use candle close plus configured adverse slippage.",
@@ -230,6 +243,7 @@ def build_signal_diagnostic(
         "1.0.0-bull-call-spread-v1",
         "1.1.0-bull-call-spread-v1",
         "1.2.0-bull-call-spread-v1",
+        "1.3.0-bull-call-spread-v1",
     }:
         adapter = _bull_call_spread_v1(decision, parameter_snapshot)
     else:

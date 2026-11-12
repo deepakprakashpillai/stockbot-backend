@@ -13,7 +13,9 @@ from app.infrastructure.datasets.derivatives_bundle import build_derivatives_bun
 IST = timezone(timedelta(hours=5, minutes=30))
 
 
-def market_bundle(root: Path, *, missing: datetime | None = None) -> Path:
+def market_bundle(
+    root: Path, *, missing: datetime | None = None, rising_futures: bool = False
+) -> Path:
     previous, current = date(2025, 7, 18), date(2025, 7, 21)
     timestamps = [
         datetime.combine(day, time(9, 20), IST) + timedelta(minutes=5 * i)
@@ -61,7 +63,13 @@ def market_bundle(root: Path, *, missing: datetime | None = None) -> Path:
             path,
         )
 
-    parquet(root / "futures/nifty_futures_5min.parquet", [24900.0] * len(timestamps))
+    parquet(
+        root / "futures/nifty_futures_5min.parquet",
+        [
+            25100.0 + i if rising_futures and t.date() == current else 24900.0
+            for i, t in enumerate(timestamps)
+        ],
+    )
     parquet(
         root / "vix/india_vix_5min.parquet",
         [20.0 if t.date() == previous else 19.0 for t in timestamps],
