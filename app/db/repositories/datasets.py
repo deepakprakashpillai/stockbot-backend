@@ -56,7 +56,7 @@ class DatasetRepository:
                 or_(Dataset.name.ilike(f"%{escaped}%"), Dataset.source.ilike(f"%{escaped}%"))
             )
         datasets = list(self.session.scalars(statement))
-        next_cursor = datasets[limit].id if len(datasets) > limit else None
+        next_cursor = datasets[limit - 1].id if len(datasets) > limit else None
         return datasets[:limit], next_cursor
 
     def count_datasets(self, status: str | None, search: str | None = None) -> int:

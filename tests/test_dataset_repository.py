@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from app.db.models.datasets import Dataset, DatasetUploadSession, DatasetVersion
 from app.db.repositories.datasets import DatasetRepository
@@ -46,7 +46,7 @@ def test_repository_lists_with_cursor_and_status() -> None:
     items, cursor = DatasetRepository(session).list_datasets("WARNING", first.id, 1)  # type: ignore[arg-type]
 
     assert items == [first]
-    assert cursor == second.id
+    assert cursor == first.id
 
 
 def test_repository_search_count_and_upload_session_queries() -> None:
@@ -63,3 +63,23 @@ def test_repository_search_count_and_upload_session_queries() -> None:
     assert repository.count_datasets("READY", search="bank_50%") == 4
     assert repository.get_upload_session(upload.id, "owner", lock=True) is upload
     assert repository.expired_upload_sessions(datetime(2026, 8, 28, tzinfo=UTC), 10) == [upload]
+
+
+def test_dataset_pages_visit_every_record_without_skipping(postgres_factory) -> None:
+    expected = [UUID(int=index) for index in range(1, 28)]
+    with postgres_factory.begin() as session:
+        session.add_all(
+            Dataset(id=identifier, name=f"History {identifier.int}")
+            for identifier in reversed(expected)
+        )
+
+    with postgres_factory() as session:
+        repository = DatasetRepository(session)
+        first, cursor = repository.list_datasets(None, None, 25)
+        assert cursor is not None
+        second, last_cursor = repository.list_datasets(None, cursor, 25)
+
+    received = [item.id for item in first + second]
+    assert received == expected
+    assert len(received) == len(set(received))
+    assert last_cursor is None
