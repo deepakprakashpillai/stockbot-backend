@@ -1,0 +1,14 @@
+1. Exit triggered at the end of the entry day
+
+Pending exit: if a target, stop or emergency condition shows at the 15:30 close, the exit stays pending. It executes at the 09:15 open on expiry day.
+Retries: the overnight closure pauses the retry clock, so the retries are the 09:20 and 09:25 opens.
+Fill price: the fill is always at the actual open, never at the level that triggered the exit.
+Both exits at once: if the pending exit and the opening-gap stop both apply, there is one fill. The recorded reason uses the earlier priority applied to conditions at that open: emergency, then stop, then time exit, then target. A pending target that opens beyond the stop is recorded as STOP_GAP, with a secondary tag showing the original trigger.
+
+2. Excluded cycle and later trading
+
+Continuing: the run does not stop and does not treat the cycle as zero. It continues under a labelled conservative assumption: for the loss limits and the losing-streak counter only, the excluded cycle counts as a loss equal to its max loss including charges. For a 12-point credit that is ₹12,620.
+Loss limits and streak: the placeholder loss counts toward the daily and monthly loss limits and counts as a losing trade for the streak.
+Reporting: performance statistics exclude the cycle, and it appears in a separate “EXCLUDED” table.
+Sensitivities: the developer reports three runs together: the placeholder loss, the cycle valued at zero, and the run halted at that point.
+Reliability: if more than 2% of cycles are excluded, the run is labelled UNRELIABLE_DATA and not used for the pass/fail check.

@@ -27,6 +27,8 @@ class DeliverySession:
 
     def scalars(self, statement):
         self.queries.append(statement)
+        if statement.column_descriptions[0].get("entity") is BacktestRun:
+            return []
         return self.exports if len(self.queries) == 1 else self.intents
 
     def scalar(self, _statement):
@@ -80,6 +82,7 @@ def test_broker_failure_retains_durable_intent_then_retry_delivers_same_identity
     assert calls[0] == calls[1]
     assert calls[1][1]["task_id"] == str(job.id)
     assert calls[1][1]["args"] == [str(job.resource_id)]
+    assert calls[1][1]["ignore_result"] is True
     assert session.commits == 2
 
 

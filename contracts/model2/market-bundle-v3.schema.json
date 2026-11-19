@@ -1,0 +1,113 @@
+{
+  "$defs": {
+    "BundleComponent": {
+      "additionalProperties": false,
+      "properties": {
+        "checksum": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Checksum",
+          "type": "string"
+        },
+        "contract_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contract Id"
+        },
+        "kind": {
+          "enum": [
+            "spot",
+            "india_vix",
+            "options",
+            "contracts",
+            "calendar",
+            "settlements",
+            "halts",
+            "futures"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "path": {
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "source_reference": {
+          "minLength": 1,
+          "title": "Source Reference",
+          "type": "string"
+        },
+        "timestamp_semantics": {
+          "anyOf": [
+            {
+              "enum": [
+                "interval_start",
+                "interval_end"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Timestamp Semantics"
+        }
+      },
+      "required": [
+        "kind",
+        "path",
+        "checksum",
+        "source_reference"
+      ],
+      "title": "BundleComponent",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "bundle_checksum": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Bundle Checksum",
+      "type": "string"
+    },
+    "components": {
+      "items": {
+        "$ref": "#/$defs/BundleComponent"
+      },
+      "title": "Components",
+      "type": "array"
+    },
+    "interval_minutes": {
+      "const": 5,
+      "default": 5,
+      "title": "Interval Minutes",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": "stockbot.derivatives-bundle.v3",
+      "default": "stockbot.derivatives-bundle.v3",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "timezone": {
+      "const": "Asia/Kolkata",
+      "default": "Asia/Kolkata",
+      "title": "Timezone",
+      "type": "string"
+    }
+  },
+  "required": [
+    "components",
+    "bundle_checksum"
+  ],
+  "title": "Model2BundleManifest",
+  "type": "object"
+}

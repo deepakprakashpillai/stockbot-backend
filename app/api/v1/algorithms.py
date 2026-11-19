@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.api.dependencies import get_db_session
 from app.api.schemas.algorithms import (
     AlgorithmDocumentationResponse,
+    AlgorithmExecutionDescriptor,
     AlgorithmListResponse,
     AlgorithmResponse,
     AlgorithmTemplateResponse,
@@ -40,7 +41,30 @@ versions_router = APIRouter(prefix="/algorithm-versions", tags=["algorithms"])
 
 
 def _definition(value: AlgorithmDefinition) -> AlgorithmResponse:
+    descriptor = value.fixed_rules.get("execution_descriptor")
+    if descriptor is None:
+        mode = (
+            "PLATFORM_DEMO"
+            if value.key == "platform_demo"
+            else "OPTION_SPREAD_SIMULATION"
+            if "OPTION_SPREAD_SIMULATION" in value.supported_modes
+            else "SIGNAL_ONLY"
+        )
+        descriptor = {
+            "mode": mode,
+            "leg_count": 2 if mode != "SIGNAL_ONLY" else 0,
+            "holding_period": "SESSION",
+            "result_path": "trades" if mode != "SIGNAL_ONLY" else "signals",
+            "scenario_group_required": False,
+            "pricing_quality": "synthetic_demo"
+            if mode == "PLATFORM_DEMO"
+            else "estimated_historical_ohlc"
+            if mode == "OPTION_SPREAD_SIMULATION"
+            else "signal_only",
+            "executable_quotes": False,
+        }
     return AlgorithmResponse(
+        execution_descriptor=AlgorithmExecutionDescriptor.model_validate(descriptor),
         key=value.key,
         display_name=value.display_name,
         description=value.description,
@@ -84,9 +108,17 @@ def _error(request: Request, exc: AlgorithmServiceError) -> JSONResponse:
 
 
 @router.get("", response_model=AlgorithmListResponse)
-def list_algorithms() -> AlgorithmListResponse:
+def list_algorithms(request: Request) -> AlgorithmListResponse:
     return AlgorithmListResponse(
-        items=[_definition(value) for value in ALGORITHM_REGISTRY.values() if value.active]
+        items=[
+            _definition(value)
+            for value in ALGORITHM_REGISTRY.values()
+            if value.active
+            and (
+                value.key != "model2_overnight_iron_condor"
+                or request.app.state.settings.model2_enabled
+            )
+        ]
     )
 
 

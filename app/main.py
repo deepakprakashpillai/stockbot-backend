@@ -107,7 +107,7 @@ def create_app(
     app = FastAPI(
         title="StockBOT Backend",
         description="Platform foundation for reproducible StockBOT research.",
-        version="0.1.1",
+        version="0.1.3",
         lifespan=lifespan,
         responses={
             404: {"model": ErrorResponse, "description": "Resource not found."},

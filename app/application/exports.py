@@ -167,7 +167,16 @@ class BacktestExportService:
         run = self.runs.get_run(run_id)
         if run is None:
             raise ExportServiceError("BACKTEST_NOT_FOUND", "The backtest does not exist.", 404)
-        if run.status != "COMPLETED":
+        if run.mode == "OPTION_PORTFOLIO_SIMULATION":
+            from app.application.model2.exports import group_for_run
+
+            try:
+                group_for_run(self.session, run.id)
+            except ValueError as exc:
+                raise ExportServiceError("MODEL2_GROUP_EXPORT_NOT_READY", str(exc), 409) from exc
+        if run.status != "COMPLETED" and not (
+            run.mode == "OPTION_PORTFOLIO_SIMULATION" and run.status in {"FAILED", "CANCELLED"}
+        ):
             raise ExportServiceError(
                 "EXPORT_RUN_NOT_COMPLETED", "Only completed runs can be exported.", 409
             )
@@ -182,6 +191,11 @@ class BacktestExportService:
             raise ExportServiceError("EXPORT_JOB_NOT_FOUND", "The export job does not exist.", 404)
         if job.status == "COMPLETED":
             return job
+        selected_run = self.session.get(BacktestRun, job.run_id)
+        if selected_run is not None and selected_run.mode == "OPTION_PORTFOLIO_SIMULATION":
+            from app.application.model2.exports import build
+
+            return build(self.session, self.settings, job)
         if (
             job.status == "RUNNING"
             and job.lease_expires_at

@@ -118,6 +118,65 @@
         "title": "AlgorithmDocumentationResponse",
         "type": "object"
       },
+      "AlgorithmExecutionDescriptor": {
+        "properties": {
+          "capital_usage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capital Usage"
+          },
+          "executable_quotes": {
+            "title": "Executable Quotes",
+            "type": "boolean"
+          },
+          "holding_period": {
+            "title": "Holding Period",
+            "type": "string"
+          },
+          "leg_count": {
+            "title": "Leg Count",
+            "type": "integer"
+          },
+          "live_trading_approved": {
+            "default": false,
+            "title": "Live Trading Approved",
+            "type": "boolean"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "pricing_quality": {
+            "title": "Pricing Quality",
+            "type": "string"
+          },
+          "result_path": {
+            "title": "Result Path",
+            "type": "string"
+          },
+          "scenario_group_required": {
+            "title": "Scenario Group Required",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "mode",
+          "leg_count",
+          "holding_period",
+          "result_path",
+          "scenario_group_required",
+          "pricing_quality",
+          "executable_quotes"
+        ],
+        "title": "AlgorithmExecutionDescriptor",
+        "type": "object"
+      },
       "AlgorithmListResponse": {
         "properties": {
           "items": {
@@ -224,6 +283,16 @@
           },
           "documentation": {
             "$ref": "#/components/schemas/AlgorithmDocumentationResponse"
+          },
+          "execution_descriptor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AlgorithmExecutionDescriptor"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "fixed_rules": {
             "additionalProperties": true,
@@ -1976,10 +2045,28 @@
             "title": "Coverage Status",
             "type": "string"
           },
+          "cycles": {
+            "items": {
+              "$ref": "#/components/schemas/Model2CycleCoverageResponse"
+            },
+            "title": "Cycles",
+            "type": "array"
+          },
           "dataset_version_id": {
             "format": "uuid",
             "title": "Dataset Version Id",
             "type": "string"
+          },
+          "entry_ready_cycle_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry Ready Cycle Count"
           },
           "estimated_row_count": {
             "title": "Estimated Row Count",
@@ -2022,6 +2109,17 @@
           "mode": {
             "title": "Mode",
             "type": "string"
+          },
+          "requested_cycle_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Cycle Count"
           },
           "requested_end_date": {
             "format": "date",
@@ -2291,6 +2389,29 @@
           "progress": {
             "title": "Progress",
             "type": "integer"
+          },
+          "scenario_group_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Group Id"
+          },
+          "scenario_policy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Policy"
           },
           "snapshot": {
             "additionalProperties": true,
@@ -5910,6 +6031,960 @@
         "title": "LocalSessionResponse",
         "type": "object"
       },
+      "Model2AssessmentResponse": {
+        "properties": {
+          "criteria": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Criteria",
+            "type": "array"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Limitations",
+            "type": "array"
+          },
+          "overall_status": {
+            "title": "Overall Status",
+            "type": "string"
+          },
+          "policy_version": {
+            "title": "Policy Version",
+            "type": "string"
+          },
+          "priced_statistics": {
+            "additionalProperties": true,
+            "title": "Priced Statistics",
+            "type": "object"
+          },
+          "reliability": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reliability"
+          },
+          "run_id": {
+            "format": "uuid",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "run_status": {
+            "title": "Run Status",
+            "type": "string"
+          },
+          "scope": {
+            "title": "Scope",
+            "type": "string"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "required": [
+          "run_id",
+          "policy_version",
+          "run_status",
+          "scope",
+          "reliability",
+          "overall_status",
+          "criteria",
+          "summary",
+          "priced_statistics",
+          "limitations"
+        ],
+        "title": "Model2AssessmentResponse",
+        "type": "object"
+      },
+      "Model2CycleCoverageResponse": {
+        "properties": {
+          "classification": {
+            "title": "Classification",
+            "type": "string"
+          },
+          "entry_data_available": {
+            "title": "Entry Data Available",
+            "type": "boolean"
+          },
+          "entry_date": {
+            "format": "date",
+            "title": "Entry Date",
+            "type": "string"
+          },
+          "entry_estimate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Model2EntryEstimateResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expiry": {
+            "format": "date",
+            "title": "Expiry",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "expiry",
+          "entry_date",
+          "classification",
+          "entry_data_available",
+          "reason",
+          "entry_estimate"
+        ],
+        "title": "Model2CycleCoverageResponse",
+        "type": "object"
+      },
+      "Model2CycleListResponse": {
+        "properties": {
+          "active_attempt_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Attempt Id"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Model2CycleResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "active_attempt_id",
+          "next_cursor"
+        ],
+        "title": "Model2CycleListResponse",
+        "type": "object"
+      },
+      "Model2CycleResponse": {
+        "properties": {
+          "attempt_id": {
+            "format": "uuid",
+            "title": "Attempt Id",
+            "type": "string"
+          },
+          "entry_date": {
+            "format": "date",
+            "title": "Entry Date",
+            "type": "string"
+          },
+          "expiry": {
+            "format": "date",
+            "title": "Expiry",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_sequence": {
+            "title": "Last Sequence",
+            "type": "integer"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "run_id": {
+            "format": "uuid",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "trade_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trade Id"
+          }
+        },
+        "required": [
+          "id",
+          "run_id",
+          "attempt_id",
+          "expiry",
+          "entry_date",
+          "state",
+          "reason",
+          "last_sequence",
+          "trade_id",
+          "payload"
+        ],
+        "title": "Model2CycleResponse",
+        "type": "object"
+      },
+      "Model2DatasetManifestResponse": {
+        "properties": {
+          "bundle_checksum": {
+            "title": "Bundle Checksum",
+            "type": "string"
+          },
+          "calendar_sha256": {
+            "title": "Calendar Sha256",
+            "type": "string"
+          },
+          "calendar_version": {
+            "title": "Calendar Version",
+            "type": "string"
+          },
+          "components": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Components",
+            "type": "array"
+          },
+          "dataset_version_id": {
+            "format": "uuid",
+            "title": "Dataset Version Id",
+            "type": "string"
+          },
+          "halt_source_available": {
+            "title": "Halt Source Available",
+            "type": "boolean"
+          },
+          "input_checksum": {
+            "title": "Input Checksum",
+            "type": "string"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Limitations",
+            "type": "array"
+          },
+          "official_settlement_available": {
+            "title": "Official Settlement Available",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "dataset_version_id",
+          "input_checksum",
+          "bundle_checksum",
+          "calendar_version",
+          "calendar_sha256",
+          "components",
+          "official_settlement_available",
+          "halt_source_available",
+          "limitations"
+        ],
+        "title": "Model2DatasetManifestResponse",
+        "type": "object"
+      },
+      "Model2EntryEstimateResponse": {
+        "properties": {
+          "assumed_margin_inr": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assumed Margin Inr"
+          },
+          "credit_points": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Credit Points",
+            "type": "string"
+          },
+          "margin_source": {
+            "const": "ASSUMED",
+            "default": "ASSUMED",
+            "title": "Margin Source",
+            "type": "string"
+          },
+          "maximum_loss_inr": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maximum Loss Inr"
+          }
+        },
+        "required": [
+          "credit_points",
+          "maximum_loss_inr",
+          "assumed_margin_inr"
+        ],
+        "title": "Model2EntryEstimateResponse",
+        "type": "object"
+      },
+      "Model2JournalEventResponse": {
+        "properties": {
+          "attempt_id": {
+            "format": "uuid",
+            "title": "Attempt Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "event_type": {
+            "title": "Event Type",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "position_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position State"
+          },
+          "run_id": {
+            "format": "uuid",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "sequence": {
+            "exclusiveMinimum": 0.0,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "session_date": {
+            "format": "date",
+            "title": "Session Date",
+            "type": "string"
+          },
+          "signal_sequence": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signal Sequence"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          },
+          "trade_sequence": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trade Sequence"
+          }
+        },
+        "required": [
+          "id",
+          "run_id",
+          "attempt_id",
+          "sequence",
+          "timestamp",
+          "session_date",
+          "event_type",
+          "position_state",
+          "signal_sequence",
+          "trade_sequence",
+          "payload",
+          "created_at"
+        ],
+        "title": "Model2JournalEventResponse",
+        "type": "object"
+      },
+      "Model2JournalListResponse": {
+        "properties": {
+          "attempt_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attempt Id"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Model2JournalEventResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "run_id": {
+            "format": "uuid",
+            "title": "Run Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "attempt_id",
+          "items",
+          "next_cursor"
+        ],
+        "title": "Model2JournalListResponse",
+        "type": "object"
+      },
+      "Model2RiskEntryResponse": {
+        "properties": {
+          "booking_date": {
+            "format": "date",
+            "title": "Booking Date",
+            "type": "string"
+          },
+          "counters": {
+            "additionalProperties": true,
+            "title": "Counters",
+            "type": "object"
+          },
+          "cycle_id": {
+            "format": "uuid",
+            "title": "Cycle Id",
+            "type": "string"
+          },
+          "priced_performance_amount": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priced Performance Amount"
+          },
+          "risk_amount": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Amount"
+          },
+          "source": {
+            "enum": [
+              "PRICED_RESULT",
+              "ASSUMED_MAX_LOSS",
+              "ASSUMED_ZERO",
+              "HALTED_AT_EXCLUSION"
+            ],
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cycle_id",
+          "booking_date",
+          "source",
+          "risk_amount",
+          "priced_performance_amount",
+          "counters"
+        ],
+        "title": "Model2RiskEntryResponse",
+        "type": "object"
+      },
+      "Model2RiskLedgerResponse": {
+        "properties": {
+          "active_attempt_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Attempt Id"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Model2RiskEntryResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "active_attempt_id",
+          "next_cursor"
+        ],
+        "title": "Model2RiskLedgerResponse",
+        "type": "object"
+      },
+      "OptionLegResponse": {
+        "properties": {
+          "contract_id": {
+            "title": "Contract Id",
+            "type": "string"
+          },
+          "entry_fill_price": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Entry Fill Price",
+            "type": "string"
+          },
+          "entry_reference_price": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Entry Reference Price",
+            "type": "string"
+          },
+          "exit_fill_price": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exit Fill Price"
+          },
+          "expiry": {
+            "format": "date",
+            "title": "Expiry",
+            "type": "string"
+          },
+          "gross_pnl_inr": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Pnl Inr"
+          },
+          "lot_size": {
+            "title": "Lot Size",
+            "type": "integer"
+          },
+          "option_type": {
+            "enum": [
+              "CE",
+              "PE"
+            ],
+            "title": "Option Type",
+            "type": "string"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "integer"
+          },
+          "role": {
+            "enum": [
+              "SHORT_CALL",
+              "LONG_CALL",
+              "SHORT_PUT",
+              "LONG_PUT"
+            ],
+            "title": "Role",
+            "type": "string"
+          },
+          "side": {
+            "enum": [
+              "BUY",
+              "SELL"
+            ],
+            "title": "Side",
+            "type": "string"
+          },
+          "strike": {
+            "title": "Strike",
+            "type": "integer"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "tick_size": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Tick Size",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "contract_id",
+          "symbol",
+          "option_type",
+          "strike",
+          "expiry",
+          "lot_size",
+          "tick_size",
+          "quantity",
+          "side",
+          "entry_reference_price",
+          "entry_fill_price",
+          "exit_fill_price"
+        ],
+        "title": "OptionLegResponse",
+        "type": "object"
+      },
+      "OptionPositionListResponse": {
+        "properties": {
+          "active_attempt_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Attempt Id"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OptionPositionResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "active_attempt_id",
+          "next_cursor"
+        ],
+        "title": "OptionPositionListResponse",
+        "type": "object"
+      },
+      "OptionPositionResponse": {
+        "properties": {
+          "assumed_margin_inr": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assumed Margin Inr"
+          },
+          "charges_inr": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Charges Inr",
+            "type": "string"
+          },
+          "entry_at": {
+            "format": "date-time",
+            "title": "Entry At",
+            "type": "string"
+          },
+          "entry_credit_points": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Entry Credit Points",
+            "type": "string"
+          },
+          "exit_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exit At"
+          },
+          "expiry": {
+            "format": "date",
+            "title": "Expiry",
+            "type": "string"
+          },
+          "finalized_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalized At"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "gross_pnl_inr": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Pnl Inr"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/OptionLegResponse"
+            },
+            "maxItems": 4,
+            "minItems": 4,
+            "title": "Legs",
+            "type": "array"
+          },
+          "margin_source": {
+            "const": "ASSUMED",
+            "default": "ASSUMED",
+            "title": "Margin Source",
+            "type": "string"
+          },
+          "maximum_loss_inr": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maximum Loss Inr"
+          },
+          "net_pnl_inr": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net Pnl Inr"
+          },
+          "original_trigger": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Trigger"
+          },
+          "priced_performance_included": {
+            "title": "Priced Performance Included",
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "trade_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trade Id"
+          }
+        },
+        "required": [
+          "id",
+          "trade_id",
+          "state",
+          "expiry",
+          "entry_at",
+          "exit_at",
+          "finalized_at",
+          "reason",
+          "original_trigger",
+          "entry_credit_points",
+          "maximum_loss_inr",
+          "assumed_margin_inr",
+          "charges_inr",
+          "gross_pnl_inr",
+          "net_pnl_inr",
+          "priced_performance_included",
+          "flags",
+          "legs"
+        ],
+        "title": "OptionPositionResponse",
+        "type": "object"
+      },
       "ParameterSchemaResponse": {
         "properties": {
           "algorithm_key": {
@@ -6231,6 +7306,99 @@
           "net_demo_units"
         ],
         "title": "RelatedSignalTradeResponse",
+        "type": "object"
+      },
+      "ResearchScenarioGroupListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchScenarioGroupResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "ResearchScenarioGroupListResponse",
+        "type": "object"
+      },
+      "ResearchScenarioGroupResponse": {
+        "properties": {
+          "cancellation_requested": {
+            "title": "Cancellation Requested",
+            "type": "boolean"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioMemberResponse"
+            },
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Members",
+            "type": "array"
+          },
+          "request_digest": {
+            "title": "Request Digest",
+            "type": "string"
+          },
+          "snapshot": {
+            "additionalProperties": true,
+            "title": "Snapshot",
+            "type": "object"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "cancellation_requested",
+          "created_at",
+          "completed_at",
+          "request_digest",
+          "snapshot",
+          "members"
+        ],
+        "title": "ResearchScenarioGroupResponse",
         "type": "object"
       },
       "RunAnalyticsSummaryResponse": {
@@ -6564,6 +7732,238 @@
           "losses"
         ],
         "title": "RunOutcomeSummaryResponse",
+        "type": "object"
+      },
+      "ScenarioComparisonCycleResponse": {
+        "properties": {
+          "expiry": {
+            "format": "date",
+            "title": "Expiry",
+            "type": "string"
+          },
+          "outcomes": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioComparisonOutcomeResponse"
+            },
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Outcomes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "expiry",
+          "outcomes"
+        ],
+        "title": "ScenarioComparisonCycleResponse",
+        "type": "object"
+      },
+      "ScenarioComparisonOutcomeResponse": {
+        "properties": {
+          "cycle_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cycle Id"
+          },
+          "policy": {
+            "enum": [
+              "MAX_LOSS_RISK",
+              "ZERO_RISK",
+              "HALT_AT_FIRST_EXCLUSION"
+            ],
+            "title": "Policy",
+            "type": "string"
+          },
+          "priced_net_pnl_inr": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priced Net Pnl Inr"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "risk_contribution": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Contribution"
+          },
+          "run_id": {
+            "format": "uuid",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "policy",
+          "run_id",
+          "cycle_id",
+          "state",
+          "reason",
+          "priced_net_pnl_inr",
+          "risk_contribution",
+          "scope"
+        ],
+        "title": "ScenarioComparisonOutcomeResponse",
+        "type": "object"
+      },
+      "ScenarioCycleComparisonResponse": {
+        "properties": {
+          "group_id": {
+            "format": "uuid",
+            "title": "Group Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioComparisonCycleResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "scenario_populations_are_independent": {
+            "default": true,
+            "title": "Scenario Populations Are Independent",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "group_id",
+          "items",
+          "next_cursor"
+        ],
+        "title": "ScenarioCycleComparisonResponse",
+        "type": "object"
+      },
+      "ScenarioMemberResponse": {
+        "properties": {
+          "excluded_cycle_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excluded Cycle Count"
+          },
+          "ordinal": {
+            "title": "Ordinal",
+            "type": "integer"
+          },
+          "policy": {
+            "enum": [
+              "MAX_LOSS_RISK",
+              "ZERO_RISK",
+              "HALT_AT_FIRST_EXCLUSION"
+            ],
+            "title": "Policy",
+            "type": "string"
+          },
+          "priced_cycle_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priced Cycle Count"
+          },
+          "primary": {
+            "title": "Primary",
+            "type": "boolean"
+          },
+          "reliability_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reliability Status"
+          },
+          "run": {
+            "$ref": "#/components/schemas/BacktestRunResponse"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope"
+          }
+        },
+        "required": [
+          "ordinal",
+          "policy",
+          "run",
+          "primary"
+        ],
+        "title": "ScenarioMemberResponse",
         "type": "object"
       },
       "SignalDecisionDetailResponse": {
@@ -7196,7 +8596,7 @@
   "info": {
     "description": "Platform foundation for reproducible StockBOT research.",
     "title": "StockBOT Backend",
-    "version": "0.1.1"
+    "version": "0.1.3"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -9439,6 +10839,69 @@
         ]
       }
     },
+    "/api/v1/backtests/{run_id}/assessment": {
+      "get": {
+        "operationId": "assessment_api_v1_backtests__run_id__assessment_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Model2AssessmentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Resource not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Assessment",
+        "tags": [
+          "model2"
+        ]
+      }
+    },
     "/api/v1/backtests/{run_id}/attempts": {
       "get": {
         "operationId": "list_execution_attempts_api_v1_backtests__run_id__attempts_get",
@@ -9562,6 +11025,171 @@
         "summary": "Cancel Backtest",
         "tags": [
           "backtests"
+        ]
+      }
+    },
+    "/api/v1/backtests/{run_id}/cycles": {
+      "get": {
+        "operationId": "list_cycles_api_v1_backtests__run_id__cycles_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Model2CycleListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Resource not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "List Cycles",
+        "tags": [
+          "model2"
+        ]
+      }
+    },
+    "/api/v1/backtests/{run_id}/cycles/{cycle_id}": {
+      "get": {
+        "operationId": "get_cycle_api_v1_backtests__run_id__cycles__cycle_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cycle_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Cycle Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Model2CycleResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Resource not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Get Cycle",
+        "tags": [
+          "model2"
         ]
       }
     },
@@ -10623,6 +12251,371 @@
         ]
       }
     },
+    "/api/v1/backtests/{run_id}/option-positions": {
+      "get": {
+        "operationId": "list_positions_api_v1_backtests__run_id__option_positions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptionPositionListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Resource not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "List Positions",
+        "tags": [
+          "model2"
+        ]
+      }
+    },
+    "/api/v1/backtests/{run_id}/option-positions/{cycle_id}": {
+      "get": {
+        "operationId": "get_position_api_v1_backtests__run_id__option_positions__cycle_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cycle_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Cycle Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptionPositionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Resource not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Get Position",
+        "tags": [
+          "model2"
+        ]
+      }
+    },
+    "/api/v1/backtests/{run_id}/portfolio-journal": {
+      "get": {
+        "operationId": "portfolio_journal_api_v1_backtests__run_id__portfolio_journal_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "attempt_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Attempt Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Model2JournalListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Resource not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Portfolio Journal",
+        "tags": [
+          "model2"
+        ]
+      }
+    },
+    "/api/v1/backtests/{run_id}/risk-ledger": {
+      "get": {
+        "operationId": "risk_ledger_api_v1_backtests__run_id__risk_ledger_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Model2RiskLedgerResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Resource not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Risk Ledger",
+        "tags": [
+          "model2"
+        ]
+      }
+    },
     "/api/v1/backtests/{run_id}/signals": {
       "get": {
         "operationId": "list_signals_api_v1_backtests__run_id__signals_get",
@@ -11516,6 +13509,69 @@
         "summary": "Commit Upload Session",
         "tags": [
           "datasets"
+        ]
+      }
+    },
+    "/api/v1/dataset-versions/{dataset_version_id}/model2-manifest": {
+      "get": {
+        "operationId": "dataset_manifest_api_v1_dataset_versions__dataset_version_id__model2_manifest_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dataset_version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Dataset Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Model2DatasetManifestResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Resource not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Dataset Manifest",
+        "tags": [
+          "model2"
         ]
       }
     },
@@ -12760,6 +14816,444 @@
         "summary": "Create Websocket Ticket",
         "tags": [
           "realtime"
+        ]
+      }
+    },
+    "/api/v1/research-scenario-groups": {
+      "get": {
+        "operationId": "list_groups_api_v1_research_scenario_groups_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchScenarioGroupListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Resource not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "List Groups",
+        "tags": [
+          "model2"
+        ]
+      },
+      "post": {
+        "operationId": "create_group_api_v1_research_scenario_groups_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BacktestCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchScenarioGroupResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Resource not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Create Group",
+        "tags": [
+          "model2"
+        ]
+      }
+    },
+    "/api/v1/research-scenario-groups/preflight": {
+      "post": {
+        "operationId": "preflight_group_api_v1_research_scenario_groups_preflight_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BacktestPreflightRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BacktestPreflightResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Resource not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Preflight Group",
+        "tags": [
+          "model2"
+        ]
+      }
+    },
+    "/api/v1/research-scenario-groups/{group_id}": {
+      "get": {
+        "operationId": "get_group_api_v1_research_scenario_groups__group_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "group_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Group Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchScenarioGroupResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Resource not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Get Group",
+        "tags": [
+          "model2"
+        ]
+      }
+    },
+    "/api/v1/research-scenario-groups/{group_id}/cancel": {
+      "post": {
+        "operationId": "cancel_group_api_v1_research_scenario_groups__group_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "group_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Group Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchScenarioGroupResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Resource not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Cancel Group",
+        "tags": [
+          "model2"
+        ]
+      }
+    },
+    "/api/v1/research-scenario-groups/{group_id}/comparison": {
+      "get": {
+        "operationId": "group_comparison_api_v1_research_scenario_groups__group_id__comparison_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "group_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Group Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioCycleComparisonResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Resource not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error."
+          }
+        },
+        "summary": "Group Comparison",
+        "tags": [
+          "model2"
         ]
       }
     },

@@ -9,6 +9,7 @@ services:
       STOCKBOT_ENV: production
       STOCKBOT_LOCAL_ACCESS_KEY: ${STOCKBOT_LOCAL_ACCESS_KEY:?Set a private access key}
       AUTHENTICATION_REQUIRED: "true"
+      MODEL2_ENABLED: ${MODEL2_ENABLED:-false}
       DATABASE_URL: postgresql+psycopg://stockbot:${POSTGRES_PASSWORD:?Set a database password}@postgres:5432/stockbot
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/1

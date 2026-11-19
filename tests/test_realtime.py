@@ -285,7 +285,7 @@ def test_event_envelope_ignores_non_public_events_and_enforces_demo_safeguards()
     )
     envelope = realtime._event_envelope(run, event)
     assert envelope is not None
-    assert envelope["contract_version"] == "1.2.0"
+    assert envelope["contract_version"] == "1.3.0"
     assert envelope["data"]["synthetic"] is True
     assert envelope["data"]["unit"] == "DEMO_UNITS"
     assert envelope["data"]["financial_pnl_available"] is False

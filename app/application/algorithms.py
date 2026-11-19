@@ -62,10 +62,18 @@ def schema_hash(definition: AlgorithmDefinition = BULL_CALL_SPREAD) -> str:
 
 
 def sync_registry(session: Session) -> int:
+    from app.core.config import get_settings
+    from app.domain.algorithms import MODEL2
+
+    enabled = get_settings().model2_enabled
     changed = 0
     repository = AlgorithmRepository(session)
     for definition in ALGORITHM_REGISTRY.values():
         record = repository.get_algorithm(definition.key)
+        if definition.key == MODEL2.key and not enabled:
+            if record is not None:
+                record.active = False
+            continue
         values = {
             "display_name": definition.display_name,
             "description": definition.description,
@@ -132,6 +140,29 @@ def sync_registry(session: Session) -> int:
             )
         )
         changed += 1
+    if enabled:
+        existing = repository.list_versions(MODEL2.key, include_archived=True)
+        session.flush()
+        for template in MODEL2.templates:
+            if not any(
+                version.code_version == MODEL2.code_version
+                and version.parameters == template.parameters
+                for version in existing
+            ):
+                version = AlgorithmVersion(
+                    algorithm_key=MODEL2.key,
+                    version_number=repository.next_version_number(MODEL2.key),
+                    name=template.name,
+                    notes=template.description,
+                    code_version=MODEL2.code_version,
+                    schema_version=MODEL2.schema_version,
+                    parameters=template.parameters,
+                    creator_context={"type": "system_research_preset"},
+                )
+                session.add(version)
+                session.flush()
+                existing.append(version)
+                changed += 1
     session.commit()
     return changed
 
@@ -280,8 +311,11 @@ class AlgorithmService:
                     "created_at": run.created_at,
                     "completed_at": run.completed_at,
                     "synthetic": run.mode == "PLATFORM_DEMO",
-                    "unit": "INR" if run.mode == "OPTION_SPREAD_SIMULATION" else "DEMO_UNITS",
-                    "financial_pnl_available": run.mode == "OPTION_SPREAD_SIMULATION",
+                    "unit": "INR"
+                    if run.mode in {"OPTION_SPREAD_SIMULATION", "OPTION_PORTFOLIO_SIMULATION"}
+                    else "DEMO_UNITS",
+                    "financial_pnl_available": run.mode
+                    in {"OPTION_SPREAD_SIMULATION", "OPTION_PORTFOLIO_SIMULATION"},
                 }
                 for run in runs
             ],

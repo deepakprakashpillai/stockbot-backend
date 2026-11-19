@@ -1,0 +1,713 @@
+{
+  "cases": [
+    {
+      "expected": {
+        "derive_from_contract": true,
+        "entry_day": "2026-01-12"
+      },
+      "id": "holiday_cycle",
+      "input": {
+        "both_normal": true,
+        "expiry": "2026-01-13",
+        "previous_session": "2026-01-12"
+      },
+      "target_slice": "36B"
+    },
+    {
+      "expected": {
+        "cycle": "SKIPPED_SPECIAL_SESSION"
+      },
+      "id": "special_session",
+      "input": {
+        "entry_session_special": true,
+        "expiry_session_special": false
+      },
+      "target_slice": "36B"
+    },
+    {
+      "expected": {
+        "decision": "15:20",
+        "fill": "15:20",
+        "reference": "OPEN"
+      },
+      "id": "entry_1520",
+      "input": {
+        "entry_source_bar_end": "15:20",
+        "entry_source_bar_start": "15:15",
+        "valid_open": "15:20"
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "fill": "15:25",
+        "further_retries": false
+      },
+      "id": "entry_retry",
+      "input": {
+        "invalid_execution_opens": [
+          "15:20"
+        ],
+        "valid_execution_opens": [
+          "15:25"
+        ]
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "position_opened": false,
+        "retry": false
+      },
+      "id": "entry_rejected",
+      "input": {
+        "entry_rejection": "RISK_CAP",
+        "later_prices_valid": true
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "short_call": 25050,
+        "short_put": 24950
+      },
+      "id": "round_away",
+      "input": {
+        "raw_call_strike": "25025",
+        "raw_put_strike": "24975",
+        "spot": "25000",
+        "step": 50
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "position_opened": false,
+        "substitute_strike": false
+      },
+      "id": "missing_contract",
+      "input": {
+        "missing_role": "LONG_PUT",
+        "nearby_alternative_available": true
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "allowed_widths": [
+          150,
+          200
+        ],
+        "old_alternative_250_allowed": false
+      },
+      "id": "widths",
+      "input": {
+        "alternative": 150,
+        "lot_count": 1,
+        "primary": 200
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "minimum_credit_gate": "PASS",
+        "risk_cap_still_required": true
+      },
+      "id": "credit_boundary",
+      "input": {
+        "credit_after_entry_slippage": "12.00"
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "entry_vix_gate": "PASS"
+      },
+      "id": "vix_boundary",
+      "input": {
+        "entry_vix": "28.00"
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "position_opened": false,
+        "reason": "NONPOSITIVE_MAX_LOSS_POINTS"
+      },
+      "id": "invalid_max_loss",
+      "input": {
+        "credit": "200",
+        "width": "200"
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "long_fills": [
+          "8.20",
+          "8.20"
+        ],
+        "net_credit": "22.80",
+        "short_fills": [
+          "19.60",
+          "19.60"
+        ]
+      },
+      "id": "adverse_slippage",
+      "input": {
+        "long_leg_opens": [
+          "8",
+          "8"
+        ],
+        "short_leg_opens": [
+          "20",
+          "20"
+        ],
+        "slippage_percent": "2",
+        "tick": "0.05"
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "future_volume_can_reject_open": false,
+        "future_volume_visible_at_open": false
+      },
+      "id": "no_future_volume",
+      "input": {
+        "execution_candle_future_volume": 0,
+        "execution_open_valid": true,
+        "preceding_volume_positive": true
+      },
+      "target_slice": "36B"
+    },
+    {
+      "expected": {
+        "fill_valid": false
+      },
+      "id": "missing_previous_bar",
+      "input": {
+        "execution_open_valid": true,
+        "preceding_completed_leg_bar_missing": true
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "hard_limit": "12500",
+        "maximum_loss": "12620",
+        "reason": "RISK_CAP"
+      },
+      "id": "cap_rejection",
+      "input": {
+        "charges": "400",
+        "credit": "12",
+        "quantity": 65,
+        "starting_capital": "500000",
+        "width": "200"
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "hard_cap_gate": "PASS",
+        "hard_limit": "12620",
+        "maximum_loss": "12620"
+      },
+      "id": "cap_equality",
+      "input": {
+        "charges": "400",
+        "credit": "12",
+        "quantity": 65,
+        "starting_capital": "504800",
+        "width": "200"
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "maximum_losses": [
+          "10800",
+          "12400"
+        ],
+        "quantities": [
+          65,
+          75
+        ]
+      },
+      "id": "historical_lot_size",
+      "input": {
+        "charges": "400",
+        "credit": "40",
+        "lot_sizes": [
+          65,
+          75
+        ],
+        "lots": 1,
+        "width": "200"
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "assumed_margin": "15000",
+        "clip_margin": false,
+        "margin_gate": "REJECT",
+        "margin_limit": "12000"
+      },
+      "id": "margin_rejection",
+      "input": {
+        "margin_multiplier": "1.5",
+        "maximum_loss_including_charges": "10000",
+        "starting_capital": "30000"
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "assumed_margin": "15000",
+        "margin_gate": "PASS",
+        "margin_limit": "15000"
+      },
+      "id": "margin_equality",
+      "input": {
+        "margin_multiplier": "1.5",
+        "maximum_loss_including_charges": "10000",
+        "starting_capital": "37500"
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "decision": "10:05",
+        "fill": "10:05",
+        "reference": "OPEN"
+      },
+      "id": "next_open_exit",
+      "input": {
+        "next_open": "10:05",
+        "trigger_bar_end": "10:05",
+        "trigger_bar_start": "10:00"
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "fill": "14:30",
+        "wait_for_1435_close": false
+      },
+      "id": "time_exit",
+      "input": {
+        "clock": "14:30",
+        "expiry_day": true,
+        "valid_four_leg_open": true
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "fill_reference_cost": "50",
+        "guaranteed_stop_fill": false
+      },
+      "id": "gap_stop",
+      "input": {
+        "actual_cost_to_close": "50",
+        "clock": "09:15",
+        "stop_cost_to_close": "40",
+        "stop_triggered_at_open": true
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "fill_count": 1,
+        "reason": "EMERGENCY"
+      },
+      "id": "exit_priority",
+      "input": {
+        "conditions": [
+          "TARGET",
+          "TIME",
+          "STOP",
+          "EMERGENCY"
+        ]
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "emergency_triggered": true,
+        "rise_fraction": "0.15"
+      },
+      "id": "vix_spike",
+      "input": {
+        "current_vix": "23",
+        "same_session": true,
+        "vix_30_minutes_earlier": "20"
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "comparison_triggered": false,
+        "event": "VIX_GAP",
+        "feed_loss_rule_still_active": true
+      },
+      "id": "vix_gap",
+      "input": {
+        "no_valid_completed_observation_within_minutes": 5,
+        "required_observation_missing": true
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "emergency_triggered": true
+      },
+      "id": "feed_lost",
+      "input": {
+        "consecutive_missing_scheduled_bars": 3,
+        "overnight_closure_counts_as_missing": false
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "pending_exit_reason": "EMERGENCY"
+      },
+      "id": "exchange_halt",
+      "input": {
+        "position_open": true,
+        "qualified_halt_evidence": true
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "fill": "14:45",
+        "flag": "LATE_FILL",
+        "guaranteed_stop_fill": false
+      },
+      "id": "late_fill",
+      "input": {
+        "first_later_valid_open": "14:45",
+        "time_exit_attempts_missing": [
+          "14:30",
+          "14:35",
+          "14:40"
+        ]
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "flag": "DATA_INCOMPLETE",
+        "include_priced_performance": true,
+        "state": "SETTLED"
+      },
+      "id": "settlement",
+      "input": {
+        "no_valid_exit_open": true,
+        "official_settlement_available": true
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "include_priced_performance": false,
+        "priced_pnl": null,
+        "state": "EXCLUDED"
+      },
+      "id": "excluded",
+      "input": {
+        "no_valid_exit_open": true,
+        "official_settlement_available": false
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "charges": "400",
+        "net_pnl": "900"
+      },
+      "id": "charges_once",
+      "input": {
+        "gross_pnl": "1300",
+        "leg_count": 4,
+        "lots": 1,
+        "round_trip_cost_per_leg_per_lot": "100"
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "gross_pnl": "1300",
+        "net_pnl": "900",
+        "slippage_on_intrinsic": false
+      },
+      "id": "no_settlement_slippage",
+      "input": {
+        "charges": "400",
+        "entry_credit": "20",
+        "quantity": 65,
+        "settlement_debit": "0",
+        "slippage_percent": "2"
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "month_net": "-15000",
+        "monthly_entry_gate_blocked": false
+      },
+      "id": "net_monthly_loss",
+      "input": {
+        "month_realized_net": [
+          "5000",
+          "-20000"
+        ],
+        "starting_capital": "500000"
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "counter_after_pause": 0,
+        "skip_next_cycles": 2,
+        "third_following_cycle_can_resume": true
+      },
+      "id": "loss_pause",
+      "input": {
+        "consecutive_losses": 3,
+        "following_scheduled_cycles": 3
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "losing_streak": 2
+      },
+      "id": "zero_streak",
+      "input": {
+        "net_pnl": "0",
+        "prior_losing_streak": 2
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "daily_limit": "15000",
+        "hard_limit": "25000",
+        "monthly_limit": "40000",
+        "resize": false
+      },
+      "id": "capital_scaling",
+      "input": {
+        "current_equity": "900000",
+        "fixed_starting_capital": "1000000"
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "closed_during_overnight": false,
+        "first_fill_attempt": "09:15",
+        "original_reason": "STOP"
+      },
+      "id": "pending_overnight",
+      "input": {
+        "entry_day_trigger": "15:30",
+        "next_session_valid_open": "09:15",
+        "trigger_reason": "STOP"
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "closure_pauses_retry_clock": true,
+        "fill": "09:25"
+      },
+      "id": "overnight_retries",
+      "input": {
+        "invalid_opens": [
+          "09:15",
+          "09:20"
+        ],
+        "pending_exit": true,
+        "valid_open": "09:25"
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "fill_count": 1,
+        "original_trigger": "TARGET",
+        "reason": "STOP_GAP"
+      },
+      "id": "target_becomes_stop_gap",
+      "input": {
+        "opening_gap_stop": true,
+        "pending_reason": "TARGET"
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "booking_date": "2026-09-01",
+        "deduct_charges_again": false,
+        "losing_streak": 2,
+        "priced_performance_delta": null,
+        "risk_ledger_delta": "-12100"
+      },
+      "id": "placeholder_risk_only",
+      "input": {
+        "entry_date": "2026-08-31",
+        "excluded_cycle_maximum_loss_including_charges": "12100",
+        "expiry_date": "2026-09-01",
+        "prior_losing_streak": 1
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "policies": [
+          "MAX_LOSS_RISK",
+          "ZERO_RISK",
+          "HALT_AT_FIRST_EXCLUSION"
+        ],
+        "primary_priced_pnl": null
+      },
+      "id": "three_scenarios",
+      "input": {
+        "cycle_excluded": true
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "halt_path_processes_later_entry": false,
+        "max_loss_path_blocks_later_entry": true,
+        "zero_path_blocks_later_entry": false
+      },
+      "id": "scenario_divergence",
+      "input": {
+        "excluded_maximum_loss": "12100",
+        "later_cycle_otherwise_eligible": true,
+        "month_net_before_exclusion": "-15000",
+        "monthly_limit": "20000"
+      },
+      "target_slice": "36D"
+    },
+    {
+      "expected": {
+        "excluded_over_opened": "0.05",
+        "quality": "UNRELIABLE_DATA",
+        "scheduled_skips_in_denominator": false
+      },
+      "id": "reliability_opened_denominator",
+      "input": {
+        "denominator": "OPENED_CYCLES_INCLUDING_EXCLUDED",
+        "excluded": 2,
+        "opened": 40,
+        "scheduled": 100
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "not_permission_to_choose_denominator": true,
+        "strict_threshold_exceeded": [
+          false,
+          true
+        ]
+      },
+      "id": "strictly_over_two_percent",
+      "input": {
+        "approved_denominator": 100,
+        "excluded_counts": [
+          2,
+          3
+        ]
+      },
+      "target_slice": "36F"
+    },
+    {
+      "expected": {
+        "model3_included": false,
+        "vix_state_filter_enabled": false
+      },
+      "id": "filter_default_off",
+      "input": {
+        "preset": "primary_200"
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "reference_available": true,
+        "reference_bar_start": "15:10"
+      },
+      "id": "filter_reference",
+      "input": {
+        "last_valid_bar_start": "15:10",
+        "previous_session_1525_bar_missing": true
+      },
+      "target_slice": "36B"
+    },
+    {
+      "expected": {
+        "cycle": "SKIPPED",
+        "filter_result": "UNKNOWN"
+      },
+      "id": "filter_unknown",
+      "input": {
+        "filter_enabled": true,
+        "previous_session_no_valid_bar_at_or_after": "15:00"
+      },
+      "target_slice": "36C"
+    },
+    {
+      "expected": {
+        "clean_holdout_claim": false,
+        "development_end": "2026-07-17",
+        "later_start": "2026-07-18"
+      },
+      "id": "development_split",
+      "input": {
+        "known_later_period_exposure": true,
+        "selected_end": "2026-11-16",
+        "selected_start": "2023-11-16"
+      },
+      "target_slice": "36F"
+    },
+    {
+      "expected": {
+        "obsolete_9000_gate_used": false,
+        "overall_assessment_still_pending": true,
+        "single_loss_gate": "PASS"
+      },
+      "id": "validation_limit",
+      "input": {
+        "single_priced_loss_including_charges": "12500",
+        "starting_capital": "500000"
+      },
+      "target_slice": "36F"
+    },
+    {
+      "expected": {
+        "broker_orders_available": false,
+        "live_trading_approved": false
+      },
+      "id": "no_live_trading",
+      "input": {
+        "historical_research_approved": true
+      },
+      "target_slice": "36F"
+    }
+  ],
+  "engine_assertions_pending": true,
+  "note": "Approved revision expectations. Strategy/risk and reliability helpers have executable unit tests; full overnight clock and end-to-end assertions remain pending.",
+  "schema_version": "stockbot.model2-acceptance-cases.v2",
+  "specification_sha256": "755096fd04fc4fda345673e8b08685cedf3f5d82db5b8f98c7dce6c222c188fa",
+  "supersedes_case_file_sha256": "b0d2d8757bf651fafd87fac4906570cfc836231f9f8cb20affb44b2fbf0dc9c3"
+}

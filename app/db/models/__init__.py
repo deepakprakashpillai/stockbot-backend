@@ -16,8 +16,18 @@ from app.db.models.backtests import (
 )
 from app.db.models.datasets import Dataset, DatasetVersion
 from app.db.models.jobs import JobDispatch
+from app.db.models.model2 import (
+    BacktestCycle,
+    BacktestRiskEntry,
+    ResearchScenarioGroup,
+    ResearchScenarioMember,
+)
 
 __all__ = [
+    "BacktestCycle",
+    "BacktestRiskEntry",
+    "ResearchScenarioGroup",
+    "ResearchScenarioMember",
     "JobDispatch",
     "Algorithm",
     "AlgorithmVersion",

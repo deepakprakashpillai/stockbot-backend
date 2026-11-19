@@ -1,0 +1,37 @@
+{
+  "schema_version": "stockbot.model2-clock-goldens.v1",
+  "specification_sha256": "755096fd04fc4fda345673e8b08685cedf3f5d82db5b8f98c7dce6c222c188fa",
+  "description": "Hand-declared synthetic milestones and monetary outcomes; not market performance. Every completed-candle event remains available in the full trace.",
+  "cases": [
+    {
+      "id": "scheduled_time_exit",
+      "net_pnl": "-400",
+      "completed_candles": 65,
+      "milestones": [
+        ["2026-01-05T15:20:00+05:30", "ENTRY_DECISION", null],
+        ["2026-01-05T15:20:00+05:30", "ENTRY_OPENED", null],
+        ["2026-01-06T09:15:00+05:30", "SESSION_STARTED", null],
+        ["2026-01-06T14:30:00+05:30", "EXIT_TRIGGERED", "TIME"],
+        ["2026-01-06T14:30:00+05:30", "EXIT_ATTEMPT", "TIME"],
+        ["2026-01-06T14:30:00+05:30", "CYCLE_FINALIZED", "TIME"],
+        ["2026-01-06T14:30:00+05:30", "RUN_FINISHED", null]
+      ]
+    },
+    {
+      "id": "pending_target_opening_stop",
+      "net_pnl": "-5600",
+      "completed_candles": 2,
+      "milestones": [
+        ["2026-01-05T15:20:00+05:30", "ENTRY_DECISION", null],
+        ["2026-01-05T15:20:00+05:30", "ENTRY_OPENED", null],
+        ["2026-01-05T15:30:00+05:30", "EXIT_TRIGGERED", "TARGET"],
+        ["2026-01-05T15:30:00+05:30", "OVERNIGHT_PENDING", "TARGET"],
+        ["2026-01-06T09:15:00+05:30", "SESSION_STARTED", null],
+        ["2026-01-06T09:15:00+05:30", "EXIT_TRIGGERED", "STOP_GAP"],
+        ["2026-01-06T09:15:00+05:30", "EXIT_ATTEMPT", "STOP_GAP"],
+        ["2026-01-06T09:15:00+05:30", "CYCLE_FINALIZED", "STOP_GAP"],
+        ["2026-01-06T09:15:00+05:30", "RUN_FINISHED", null]
+      ]
+    }
+  ]
+}

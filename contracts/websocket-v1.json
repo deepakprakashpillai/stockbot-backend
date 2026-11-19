@@ -1,5 +1,5 @@
 {
-  "contract_version": "1.2.0",
+  "contract_version": "1.3.0",
   "endpoint": "/api/v1/ws?ticket=<single-use-ticket>",
   "authentication": {
     "session_create": "POST /api/v1/auth/session",
@@ -33,7 +33,7 @@
     }
   },
   "event_envelope": {
-    "contract_version": "1.2.0",
+    "contract_version": "1.3.0",
     "event_id": "<durable-run-event-uuid>",
     "sequence": 42,
     "type": "backtest.progress",
@@ -65,7 +65,8 @@
     "backtest.completed",
     "backtest.failed",
     "backtest.cancelled",
-    "backtest.journal_updated"
+    "backtest.journal_updated",
+    "backtest.portfolio_updated"
   ],
   "control_types": [
     "subscribed",

@@ -1502,12 +1502,18 @@ PLATFORM_DEMO = AlgorithmDefinition(
     ),
 )
 
+from app.domain.model2.definition import model2_definition  # noqa: E402
+
+MODEL2 = model2_definition()
+
 ALGORITHM_REGISTRY = {
+    MODEL2.key: MODEL2,
     FUTURES_BULL_CALL_SPREAD.key: FUTURES_BULL_CALL_SPREAD,
     PLATFORM_DEMO.key: PLATFORM_DEMO,
 }
 
 ALGORITHM_VERSION_REGISTRY = {
+    (MODEL2.key, MODEL2.code_version): MODEL2,
     (LEGACY_BULL_CALL_SPREAD.key, LEGACY_BULL_CALL_SPREAD.code_version): LEGACY_BULL_CALL_SPREAD,
     (
         PRE_CORRECTION_BULL_CALL_SPREAD.key,
