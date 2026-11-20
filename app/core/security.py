@@ -64,7 +64,7 @@ def rate_limit_policy(path: str, method: str, settings: Settings) -> tuple[str, 
             return "dataset_upload", settings.security_upload_limit
         if path.startswith("/api/v1/algorithms"):
             return "algorithm_version", settings.security_command_limit
-    if path.startswith("/api/v1/backtests"):
+    if path.startswith(("/api/v1/backtests", "/api/v1/research-scenario-groups")):
         if method == "GET" and (
             "/exports/" in path or path.endswith("/download") or path.endswith("/export")
         ):

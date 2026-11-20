@@ -181,7 +181,7 @@ def test_route_preflight_and_not_found_responses(monkeypatch) -> None:
     value = dataset()
 
     class Service:
-        def preflight(self, *_args):
+        def preflight(self, *_args, **_kwargs):
             return {
                 "allowed": False,
                 "mode": "SIGNAL_ONLY",

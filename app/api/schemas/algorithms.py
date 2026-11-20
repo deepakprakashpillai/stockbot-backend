@@ -62,7 +62,20 @@ class AlgorithmDocumentationResponse(BaseModel):
     rules: list[AlgorithmRuleResponse] = Field(default_factory=list)
 
 
+class AlgorithmExecutionDescriptor(BaseModel):
+    mode: str
+    leg_count: int
+    holding_period: str
+    result_path: str
+    scenario_group_required: bool
+    pricing_quality: str
+    executable_quotes: bool
+    capital_usage: str | None = None
+    live_trading_approved: bool = False
+
+
 class AlgorithmResponse(BaseModel):
+    execution_descriptor: AlgorithmExecutionDescriptor | None = None
     key: str
     display_name: str
     description: str

@@ -17,6 +17,7 @@ class Settings(BaseSettings):
         default="development", validation_alias="STOCKBOT_ENV"
     )
     log_level: str = "INFO"
+    model2_enabled: bool = False
     database_url: str = "postgresql+psycopg://stockbot:stockbot@localhost:5432/stockbot"
     celery_broker_url: str = "redis://localhost:6379/0"
     celery_result_backend: str = "redis://localhost:6379/1"

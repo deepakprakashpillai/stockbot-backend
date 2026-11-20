@@ -119,11 +119,28 @@ def _reason_summary(raw_code: str, diagnostic: dict[str, Any] | None) -> ReasonS
 
 
 def _run_outcome_summary(value: BacktestRun) -> RunOutcomeSummaryResponse | None:
+    if value.mode == "OPTION_PORTFOLIO_SIMULATION":
+        metrics_record = getattr(value, "metrics", None)
+        metrics = metrics_record.metrics if metrics_record else {}
+        stats = metrics.get("priced_statistics", {})
+        if value.status != "COMPLETED" or not stats.get("trade_count"):
+            return None
+        return RunOutcomeSummaryResponse(
+            net_outcome=Decimal(stats["net_pnl_inr"]),
+            max_drawdown_amount=Decimal(stats["max_drawdown_inr"]),
+            trade_count=stats["trade_count"],
+            wins=stats["wins"],
+            losses=stats["losses"],
+            mode=value.mode,
+            synthetic=False,
+            unit="INR",
+            financial_pnl_available=True,
+        )
     analytics = getattr(value, "analytics", None)
     if not analytics:
         return None
     summary = analytics.summary
-    is_inr = value.mode == "OPTION_SPREAD_SIMULATION"
+    is_inr = value.mode in {"OPTION_SPREAD_SIMULATION", "OPTION_PORTFOLIO_SIMULATION"}
     unit = summary.get("unit", "INR" if is_inr else "DEMO_UNITS")
     synthetic = summary.get("synthetic", not is_inr)
     financial_pnl = summary.get("financial_pnl_available", is_inr)
@@ -162,6 +179,8 @@ def _run(value: BacktestRun) -> BacktestRunResponse:
         )
     return BacktestRunResponse(
         id=value.id,
+        scenario_group_id=value.snapshot.get("scenario_group_id"),
+        scenario_policy=value.snapshot.get("policy"),
         dataset_version_id=value.dataset_version_id,
         algorithm_version_id=value.algorithm_version_id,
         start_date=value.start_date,
@@ -344,7 +363,7 @@ def _signal_detail(
             financial_pnl_available=bool(
                 assumptions.get(
                     "financial_pnl_available",
-                    run.mode == "OPTION_SPREAD_SIMULATION",
+                    run.mode in {"OPTION_SPREAD_SIMULATION", "OPTION_PORTFOLIO_SIMULATION"},
                 )
             ),
         ),
@@ -429,9 +448,12 @@ def _catalog_run(value: BacktestRun) -> BacktestCatalogRunResponse:
         duration_seconds=duration,
         metrics_summary=safe_metrics,
         outcome_summary=_run_outcome_summary(value),
-        synthetic=value.mode != "OPTION_SPREAD_SIMULATION",
-        unit="INR" if value.mode == "OPTION_SPREAD_SIMULATION" else "DEMO_UNITS",
-        financial_pnl_available=value.mode == "OPTION_SPREAD_SIMULATION",
+        synthetic=value.mode not in {"OPTION_SPREAD_SIMULATION", "OPTION_PORTFOLIO_SIMULATION"},
+        unit="INR"
+        if value.mode in {"OPTION_SPREAD_SIMULATION", "OPTION_PORTFOLIO_SIMULATION"}
+        else "DEMO_UNITS",
+        financial_pnl_available=value.mode
+        in {"OPTION_SPREAD_SIMULATION", "OPTION_PORTFOLIO_SIMULATION"},
     )
 
 
@@ -452,7 +474,7 @@ def _history_summary(values: list[BacktestRun]) -> BacktestHistorySummaryRespons
     completed = statuses["COMPLETED"]
     active = statuses["PENDING"] + statuses["RUNNING"]
     result_modes = {value.mode for value in values}
-    has_estimates = "OPTION_SPREAD_SIMULATION" in result_modes
+    has_estimates = bool({"OPTION_SPREAD_SIMULATION", "OPTION_PORTFOLIO_SIMULATION"} & result_modes)
     has_demo = "PLATFORM_DEMO" in result_modes
     return BacktestHistorySummaryResponse(
         total_runs=len(values),
@@ -531,7 +553,7 @@ def _not_found(request: Request) -> JSONResponse:
 def _analytics_safeguards(
     timezone: str, mode: str = "PLATFORM_DEMO"
 ) -> AnalyticsSafeguardsResponse:
-    is_inr = mode == "OPTION_SPREAD_SIMULATION"
+    is_inr = mode in {"OPTION_SPREAD_SIMULATION", "OPTION_PORTFOLIO_SIMULATION"}
     return AnalyticsSafeguardsResponse(
         mode=mode,
         synthetic=not is_inr,

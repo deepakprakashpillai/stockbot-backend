@@ -67,6 +67,10 @@ def test_metadata_registers_the_phase_five_tables() -> None:
         "backtest_export_jobs",
         "experiment_plans",
         "experiment_runs",
+        "research_scenario_groups",
+        "research_scenario_members",
+        "backtest_cycles",
+        "backtest_risk_entries",
     }
 
 

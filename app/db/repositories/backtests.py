@@ -102,6 +102,14 @@ class BacktestRepository:
         statement: Select[tuple[BacktestRun]] | Select[tuple[int]],
         filters: BacktestRunFilters,
     ) -> Select[tuple[BacktestRun]] | Select[tuple[int]]:
+        # Counterfactual child runs remain accessible through their group and
+        # direct IDs. Default history/dashboard populations include the primary.
+        statement = statement.where(
+            or_(
+                BacktestRun.mode != "OPTION_PORTFOLIO_SIMULATION",
+                BacktestRun.snapshot["policy"].astext == "MAX_LOSS_RISK",
+            )
+        )
         if filters.run_query:
             statement = statement.where(cast(BacktestRun.id, String).startswith(filters.run_query))
         if filters.status:

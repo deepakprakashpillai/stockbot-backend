@@ -95,6 +95,11 @@ class BacktestService:
 
     @staticmethod
     def _mode(algorithm_key: str, code_version: str | None = None) -> str:
+        if (
+            algorithm_key == "model2_overnight_iron_condor"
+            and code_version == "1.0.0-model2-iron-condor"
+        ):
+            return "OPTION_PORTFOLIO_SIMULATION"
         if algorithm_key == "platform_demo":
             return "PLATFORM_DEMO"
         if algorithm_key == "bull_call_spread" and code_version in {
@@ -116,6 +121,7 @@ class BacktestService:
         accepted_coverage_digest: str | None = None,
         *,
         parameters_override: dict[str, Any] | None = None,
+        starting_capital: Decimal | None = None,
     ) -> dict[str, object]:
         dataset = self.datasets.get_version(dataset_version_id)
         algorithm_version = self.algorithms.get_version(algorithm_version_id)
@@ -129,6 +135,25 @@ class BacktestService:
                 "The requested algorithm version does not exist.",
                 404,
             )
+        if algorithm_version.algorithm_key == "model2_overnight_iron_condor":
+            from app.application.model2.groups import Model2GroupService, Model2ServiceError
+
+            try:
+                return Model2GroupService(self.session, self.storage, self.settings).preflight(
+                    dataset_version_id,
+                    algorithm_version_id,
+                    start_date,
+                    end_date,
+                    starting_capital or Decimal("500000"),
+                    warning_acknowledged,
+                    accepted_coverage_digest,
+                )
+            except Model2ServiceError as exc:
+                raise BacktestServiceError(
+                    exc.code, exc.message, exc.status_code, exc.details
+                ) from exc
+            except (ValueError, KeyError) as exc:
+                raise BacktestServiceError("MODEL2_INPUT_INVALID", str(exc), 422) from exc
         definition = get_algorithm(
             algorithm_version.algorithm_key,
             code_version=algorithm_version.code_version,
@@ -435,6 +460,45 @@ class BacktestService:
         commit: bool = True,
         depends_on_run_id: UUID | None = None,
     ) -> tuple[BacktestRun, bool]:
+        selected = self.algorithms.get_version(algorithm_version_id)
+        if selected is not None and selected.algorithm_key == "model2_overnight_iron_condor":
+            from app.application.model2.groups import Model2GroupService, Model2ServiceError
+            from app.db.models.model2 import ResearchScenarioMember
+
+            if not commit or depends_on_run_id is not None:
+                raise BacktestServiceError(
+                    "MODEL2_SCENARIO_GROUP_REQUIRED",
+                    "Model 2 uses its own three-policy research group.",
+                    409,
+                )
+            try:
+                group, duplicate = Model2GroupService(
+                    self.session, self.storage, self.settings
+                ).create(
+                    dataset_version_id=dataset_version_id,
+                    algorithm_version_id=algorithm_version_id,
+                    start_date=start_date,
+                    end_date=end_date,
+                    starting_capital=starting_capital,
+                    warning_acknowledged=warning_acknowledged,
+                    accepted_coverage_digest=accepted_coverage_digest,
+                    idempotency_key=idempotency_key,
+                )
+            except Model2ServiceError as exc:
+                raise BacktestServiceError(
+                    exc.code, exc.message, exc.status_code, exc.details
+                ) from exc
+            except (ValueError, KeyError) as exc:
+                raise BacktestServiceError("MODEL2_INPUT_INVALID", str(exc), 422) from exc
+            member = self.session.scalar(
+                select(ResearchScenarioMember).where(
+                    ResearchScenarioMember.group_id == group.id, ResearchScenarioMember.ordinal == 1
+                )
+            )
+            assert member is not None
+            primary = self.runs.get_run(member.run_id)
+            assert primary is not None
+            return primary, duplicate
         if idempotency_key:
             if len(idempotency_key) > 200:
                 raise BacktestServiceError(
@@ -585,6 +649,21 @@ class BacktestService:
         return run, False
 
     def cancel(self, run_id: UUID) -> BacktestRun:
+        selected_run = self.runs.get_run(run_id)
+        if (
+            selected_run is not None
+            and getattr(selected_run, "mode", None) == "OPTION_PORTFOLIO_SIMULATION"
+        ):
+            from app.application.model2.groups import Model2GroupService
+            from app.db.models.model2 import ResearchScenarioMember
+
+            member = self.session.get(ResearchScenarioMember, run_id)
+            if member is None:
+                raise BacktestServiceError(
+                    "SCENARIO_GROUP_NOT_FOUND", "The Model 2 group is missing.", 409
+                )
+            Model2GroupService(self.session, self.storage, self.settings).cancel(member.group_id)
+            return selected_run
         run = self.runs.get_run(run_id, lock=True)
         if run is None:
             raise BacktestServiceError(
@@ -674,6 +753,14 @@ class BacktestService:
         self.runs.replace_day_classifications(run.id, attempt_id, values)
 
     def execute(self, run_id: UUID) -> dict[str, object]:
+        lookup = getattr(self.runs, "get_run", None)
+        run = lookup(run_id) if callable(lookup) else None
+        if run is not None and getattr(run, "mode", None) == "OPTION_PORTFOLIO_SIMULATION":
+            from app.application.model2.execution import Model2ExecutionService
+
+            return Model2ExecutionService(
+                self.session, self.storage, self.settings, self.publisher
+            ).execute(run_id)
         from app.application.backtest_execution import execute_backtest
 
         return execute_backtest(self, run_id)

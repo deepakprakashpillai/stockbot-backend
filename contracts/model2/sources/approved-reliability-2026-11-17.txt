@@ -1,0 +1,123 @@
+Model 2 – Answers to Developer Clarification Questions
+Answers for approval · updated 17 Nov 2026 (spec v1.4) · Backtesting only. These answers do not authorize live trading.
+Aravind has decided Q6 (risk cap), Q7 (margin assumption) and Q12 (validation) on 17 Nov 2026. They are marked DECISION. Everything else is a proposed answer the developer can start on.
+Q1. Approved baseline
+• Baseline = the Model 2 spec including Section 4A (entry calendar). The approved baseline is spec v1.4 (17 Nov 2026), which includes Section 4A (entry calendar); 4B and 4C were added as notes. The heading byline and change log now both say v1.4.
+• Initial implementation includes only the primary expiry-eve iron condor: entry on the trading day before expiry, k = 1.0, 200-point wings.
+• Excluded: the VIX-state filter (Section 4B, hypothesis) and Model 3 / Section 4C (paper trade only). Build the 4B filter as a switch that defaults to OFF, so it can be run later without code changes.
+Q2. Entry time
+• In the supplied data, candle timestamps are start times (first candle 09:15, last 15:25). The "15:15 candle" therefore covers 15:15–15:20. The decision is made when that candle closes (15:20), using that candle's close values (spot, VIX).
+• Filling: use the next candle's open (the 15:20 candle) when real quotes are unavailable. The earlier modeled results used the 15:15 candle close, so they will look slightly different; rerun them as the reference.
+• Waiting: if any of the four legs has no valid price in the 15:20 candle, try the 15:25 candle once. If still invalid, skip the cycle and log "NO_VALID_ENTRY". No further retries, and no retry of a rejected entry.
+Q3. Strike rounding and unavailable contracts
+• Round the short strikes to the nearest 50. If exactly halfway, round away from spot (call strike up, put strike down), which is the more conservative choice.
+• Wings are exactly 200 points beyond each short strike (no rounding needed).
+• If any of the four contracts is unavailable, skip the whole cycle and log the missing contract. Do not substitute another strike in version 1.
+Q4. Pricing the four legs
+• With no bid/ask data: entry price = the open of the entry candle; exit price = the close of the exit candle (Q8). All four prices come from the same timestamp; if one is missing, the cycle is skipped (entry) or handled by Q10 (exit).
+• Slippage makes every buy more expensive and every sell cheaper, at both entry and exit. At entry: sell legs receive price × (1 − s), buy legs pay price × (1 + s). At exit: buying back a short pays price × (1 + s), selling a long receives price × (1 − s). Run s = 0%, 1% and 2%; pass/fail is judged at 2%.
+• The 75% price level used in earlier modeled tests applies only to modeled prices, never to real data.
+Q5. Which credit drives the rules
+• Use the credit after entry slippage for the 12-point minimum credit, the profit target, the stop loss and the maximum-loss calculation.
+• Transaction charges: include them in the maximum-loss figure used for sizing (conservative), but target and stop thresholds are measured in option points on the slippage-adjusted credit. Charges are also deducted in the final P&L.
+Q6. Position sizing and the ₹7,500 / ₹12,500 limits (DECIDED)
+• The "one lot allowed above ₹7,500 but within the hard limit" exception was intentional in the draft, but the pseudocode is wrong: it forces one lot without checking the hard limit. Confirmed: skip the cycle if even one lot's maximum loss exceeds the hard limit.
+• Problem found: a 200-point-wing condor has a maximum loss of about ₹11,950 per lot (184 points × 65). With a ₹9,000 hard limit, almost every cycle would be skipped.
+• Options considered (Aravind chose option 1 on 17 Nov 2026):
+    1.  Raise the hard limit to ₹12,500 (2.5% of capital) and keep ₹7,500 as the target (use 1 lot).
+    2.  Narrow the wings to 150 points (maximum loss about ₹8,700 per lot) so the ₹9,000 limit works; this changes the strategy and must be re-tested.
+    3.  Keep ₹9,000 and accept that the strategy rarely trades.
+• Adopted: option 1, hard limit ₹12,500 including charges, 200-point wings, 1 lot (spec v1.4). Option 2 is not adopted: the 150-point wing fits the ₹9,000 limit only if option prices are richer than the VIX-based model.
+• Scaling: limits scale with capital as percentages. At ₹5 lakh: trade target 1.5%, hard limit 2.5%, daily loss 1.5%, monthly loss 4%. If capital changes, the rupee values change in proportion.
+Q7. Historical margin (DECIDED)
+• No historical margin source is available. Approved research assumption (Aravind, 17 Nov 2026): margin per condor = maximum loss per lot × 1.5, never above 40% of capital. The run is not blocked; the assumed margin is logged on every cycle and labeled "ASSUMED".
+• Live trading is blocked until the broker's margin API is integrated.
+Q8. Monitoring and exits
+• Monitoring starts immediately after entry, through the remaining entry-day candles (to 15:25), and resumes at the first valid expiry-day observation (09:15 candle).
+• Conditions are evaluated at each candle close; the fill is at the next candle's open. If the market opens beyond the stop, fill at the first available price, not at the stop level.
+• Time exit: decision at the candle that starts at 14:30 on expiry day; fill at that candle's open; maximum delay 2 candles (10 minutes). If no valid price exists by then, apply Q10.
+Q9. Exit priority
+• Not the order listed in the draft. Revised priority when conditions coincide: (1) emergency exit, (2) stop loss, (3) time exit, (4) profit target. Target and stop cannot both trigger on one valuation, so the order mainly matters for the label.
+• VIX emergency: compare the current 5-minute VIX with the value 6 candles (30 minutes) earlier within the same session. The comparison resets each morning, so it does not use the previous day's close. Gaps at the open are handled by the stop, not by this rule.
+• Feed lost: more than 2 consecutive missing scheduled candles; only market-hours candles count.
+Q10. Missing data and halts
+• A leg quote is valid if a candle exists with the same timestamp for all four legs, the close is above zero and (if volume is supplied) volume is above zero. It is stale if any of those fail.
+• Missing exit prices while a position is open: mark the cycle "DATA_INCOMPLETE", value it pessimistically (at the stop loss, or at maximum loss if no valid stop price), and report results both including and excluding these cycles.
+• If no valid exit price returns before settlement, value the position at its intrinsic settlement value from the official closing index.
+Q11. Costs, limits and pauses
+• ₹100 per leg per lot, round trip (placeholder, to be replaced with real contract notes). One lot = ₹400; three lots = ₹1,200.
+• Daily and monthly limits use realized net losses (after costs). They stop new trades only; they do not force an open position closed (the position's own stop does that).
+• After 3 consecutive losing trades: in backtesting, skip the next 2 weekly cycles and resume automatically; in live use, resume only with manual approval. The counter resets after any winning trade (net above zero) or when the pause ends.
+Q12. Research settings and validation (DECIDED)
+• Save two configurations: primary (200-point wings) and alternative (150-point wings; replaces the 250-point idea, see R2-6), with all other parameters fixed. Confirmed by Aravind.
+• Dates already examined for Model 2 (modeled prices): 16 Nov 2023 to 17 Jul 2026 (139 weekly cycles). The calendar rule (4A) and VIX filter (4B) were found by looking at this whole period, so it is a development window, not a clean test.
+• 18 Jul 2026 to 16 Nov 2026: Model 2 has not been run on it. But that period was used once for the Model 3 check and the Tuesday-short test, and its market data was seen in those tests. Treat it as unseen for Model 2 results, but not fully clean.
+• Only genuinely unseen data: anything before 16 Nov 2023. If real option prices exist for earlier years (2021–2023), reserve them as the final validation.
+• Aravind's instruction: there is no restriction on dates; the developer may use whatever data he has. Record the date range of every run and report the 16 Nov 2023 – 17 Jul 2026 development window separately from any other period, so tested and untested data are not mixed.
+• Approver: Aravind approves these answers and the final consolidated Model 2 specification. The developer should not treat anything here as approval for live trading.
+Round 2 answers (17 Nov 2026, spec v1.4, historical backtesting only)
+These answers settle the remaining ambiguities. Where they conflict with an earlier answer above, Round 2 wins. The one open item, the alternative configuration (R2-6), was decided on 17 Nov 2026: 150-point wings.
+R2-1. Exit price rule
+• Target, stop and emergency exits: the condition is evaluated at the close of a completed candle; the exit fills at the open of the next candle. This replaces the Q4 line "exit price = close of the exit candle".
+• Entry follows the same logic: decision at the close of the 15:15 candle, fill at the 15:20 candle's open (Q2).
+• Slippage applies to every fill as in Q4.
+R2-2. Time exit and opening gap
+• Time exit: no waiting for the 14:30 candle to close. The decision is the clock reaching 14:30 on expiry day; fill at the open of the 14:30 candle.
+• If any leg has no valid price at that open, retry at the 14:35 and then the 14:40 candle opens, and no later. Beyond that, apply R2-4.
+• Opening gap: at the 09:15 candle on expiry day, value the four legs at their opening prices before the candle closes. If the loss is already beyond the stop, exit immediately at those opening prices (first valid opening price, not the stop level). If not, continue with normal candle-close checks from the 09:15 candle's close.
+R2-3. What makes a fill price valid
+• Checks on the preceding completed candle (known at execution): all four legs have a candle, close above zero and volume above zero. For the 09:15 candle the preceding candle is the previous session's last candle (15:25).
+• Checks on the execution candle's open (known at execution): a candle exists for all four legs and the open is above zero. Do not use the execution candle's close or volume, which are not known at its open.
+• No separate liquidity requirement beyond the preceding-candle volume check.
+R2-4. Missing exit data (replaces the Q10 valuation rule)
+1.  Normal path: a valid price within the retry window (the execution candle plus two retries, 10 minutes).
+2.  If still invalid, keep trying at every later candle open until 15:25 on expiry day. Flag the cycle "LATE_FILL" and use the first valid open.
+3.  If no valid price appears all day, value at intrinsic settlement value using the official closing index. This is the real outcome of holding to expiry, and it goes into the main result, flagged "DATA_INCOMPLETE".
+4.  If official settlement data is also unavailable, exclude the cycle from the main result and report it under "EXCLUDED", with a separate sensitivity valued at maximum loss.
+5.  An unobserved stop is never used in the main result; it may appear only as a separate hypothetical scenario table.
+6.  Costs and slippage: ₹100 per leg per lot is charged on every cycle. Slippage applies to actual fills, not to settlement intrinsic values.
+R2-5. Capital and limits
+• Percentage limits use fixed starting capital (₹5,00,000) for the whole run. There is no compounding and no resizing with equity.
+• Daily and monthly limits use cumulative realized net P&L for the day or calendar month, so profits offset losses. The monthly limit stops new trades once month-to-date net is −₹20,000 or worse.
+• A trade with exactly zero net P&L is not a loss and not a win. The consecutive-loss counter is left unchanged.
+R2-6. Margin and saved configurations (DECIDED)
+• If assumed margin exceeds 40% of capital, skip the cycle; do not reduce the margin to 40%.
+• Maximum loss used for the margin calculation includes transaction charges.
+• Both configurations use exactly one lot. This replaces the variable-lot formula (it gives zero lots at the ₹7,500 target anyway).
+• Flag: a 250-point-wing condor has a maximum loss of (250 − credit) × 65 + ₹400, about ₹15,000–16,000, which exceeds the ₹12,500 hard limit at any realistic credit. As written it would be rejected every cycle.
+• Decided by Aravind (17 Nov 2026): the 250-point alternative is dropped and replaced with a 150-point-wing configuration. Its maximum loss is (150 − credit) × 65 + ₹400, about ₹9,000–10,000 per lot, so it always fits the ₹12,500 limit. Same rules, 1 lot, all other parameters identical to the primary 200-point configuration.
+R2-7. Validation loss threshold
+• The pass bar changes from ₹9,000 to ₹12,500 (largest single realized loss, net of charges), matching the approved hard limit. Section 12 of the spec already reads ₹12,500.
+• The developer's arithmetic is right: credit 12 points gives a maximum loss of (200 − 12) × 65 + 400 = ₹12,620, so that cycle is rejected. The cap is only met when credit is at least about 14 points (13.85). The 12-point minimum credit stays in the spec, but the cap check is the binding rule; log "RISK_CAP" as the skip reason.
+R2-8. Experimental items
+• The VIX-state filter (Section 4B) stays OFF in the primary configuration and is labelled "EXPERIMENTAL" wherever it is switched on.
+• Previous-session VIX reference: the close of the 15:25 candle of the previous trading day (the last 5-minute VIX bar). If that bar is missing, use the last valid bar at or after 15:00. If none exists, the filter result is "unknown" and the cycle is skipped when the filter is on.
+• Filter definition (unchanged): VIX at 15:15 on the entry day compared with that reference; "rose" means equal or higher.
+• VIX emergency comparison with a missing observation: use the nearest valid bar within one candle of the required time. If still missing, do not trigger the emergency from that comparison, log "VIX_GAP", and rely on the feed-lost rule (more than 2 missing candles triggers an exit).
+R2-9. Exit triggered at the end of the entry day
+• A target, stop or emergency condition seen at the close of the 15:25 candle (15:30) has no next regular candle that afternoon. The exit stays pending and executes at the open of the 09:15 candle on expiry day, the next trading session's first valid open.
+• The overnight closure pauses the retry clock. The retry window (the execution candle plus two retries) counts trading candles only, so the retries are the 09:20 and 09:25 opens.
+• The fill is always at the actual opening prices, never at the level that triggered the exit. A pending target is not filled at its target level; it fills at whatever the open is.
+• If a pending exit and the opening-gap stop (R2-2) both apply at the 09:15 open, there is one fill. Record the reason using the Q9 priority applied to the conditions true at that open: emergency, then stop, then time exit, then target. So a pending target that opens beyond the stop is recorded as STOP_GAP, with a secondary tag "PENDING_TARGET" showing what was originally triggered.
+R2-10. Effect of an excluded cycle on later trading
+• The main simulation does not stop and does not treat the cycle as zero. It continues under a labelled conservative assumption: for the loss limits and the streak counter only, the excluded cycle counts as a loss equal to its maximum loss including charges, for example ₹12,620 for a 12-point credit.
+• Monthly loss limit: the placeholder loss is included in month-to-date net P&L for the calendar month of its expiry date. Daily limit: the same, for that day. Consecutive-loss counter: it counts as a losing trade.
+• Performance statistics (net P&L, profit factor, largest loss, monthly returns) exclude the cycle, as in R2-4, and it is listed in a separate "EXCLUDED" table with its assumed placeholder loss.
+• Required sensitivities: re-run (a) with the cycle valued at zero and (b) with the run halted at that point. Report all three results together.
+• Run quality: if more than 2% of opened trades in a run (excluded cycles ÷ all cycles where a position actually opened, excluded ones included; weeks skipped before entry do not count; exactly 2% is allowed) are excluded, label the whole run "UNRELIABLE_DATA" and do not use it for the pass/fail check.
+• If actual settlement data is found later, replace the placeholder with the real result and rerun.
+Approved by Aravind on 17 Nov 2026: R2-9, R2-10 and the reliability rule (excluded cycles ÷ opened trades, more than 2% triggers UNRELIABLE_DATA). Automated reliability qualification and pass/fail assessment may be switched on. Approval is for historical backtesting only; the logs will be checked after the first run and corrections issued.
+What spec v1.4 replaces
+Earlier rule
+Replaced by
+Hard limit ₹9,000 (including pass bar)
+₹12,500, including charges
+Variable lots 1 to 3 by the ₹7,500 target
+Exactly 1 lot
+Exit at the exit candle's close (Q4)
+Next candle's open (R2-1)
+Pessimistic stop or maximum-loss valuation for missing exits (Q10)
+Late fill, then settlement intrinsic, then exclusion (R2-4)
+250-point alternative configuration
+150-point alternative configuration (R2-6)
+Approval covers historical backtesting only.

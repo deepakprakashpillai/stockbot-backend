@@ -35,7 +35,7 @@ from app.infrastructure.realtime import (
 
 router = APIRouter(tags=["realtime"])
 SESSION_COOKIE = "stockbot_session"
-WEBSOCKET_CONTRACT_VERSION = "1.2.0"
+WEBSOCKET_CONTRACT_VERSION = "1.3.0"
 
 EVENT_TYPES = {
     "BACKTEST_STARTED": "backtest.started",
@@ -45,6 +45,7 @@ EVENT_TYPES = {
     "BACKTEST_FAILED": "backtest.failed",
     "BACKTEST_CANCELLED": "backtest.cancelled",
     "BACKTEST_JOURNAL_UPDATED": "backtest.journal_updated",
+    "BACKTEST_PORTFOLIO_UPDATED": "backtest.portfolio_updated",
 }
 
 

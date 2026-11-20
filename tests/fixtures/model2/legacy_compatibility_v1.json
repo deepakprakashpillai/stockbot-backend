@@ -1,0 +1,349 @@
+{
+  "backend_commit": "ee81c3fa04c578ae655e2c3209499a70484410af",
+  "captured_before_model2_runtime_changes": true,
+  "fixture": "Three 75-bar sessions, 2/5/6 January 2026; recipe in test_model2_compatibility_baseline.py",
+  "schema_version": "stockbot.model2-legacy-baseline.v1",
+  "snapshot": {
+    "active_registry": {
+      "bull_call_spread": "1.3.0-bull-call-spread-v1",
+      "platform_demo": "1.0.0-platform-demo"
+    },
+    "engine_version": "1.2.3-market-journal",
+    "versions": {
+      "bull_call_spread@0.1.0-signal-research": {
+        "accepted_count": 58,
+        "active": false,
+        "decision_count": 225,
+        "decisions_sha256": "67478052a6c19ffca52aca05f128397ad3bb379ab35c6c20793835cff3681214",
+        "default_parameters": {
+          "entry_window_1_end": "10:55:00",
+          "entry_window_1_start": "09:30:00",
+          "entry_window_2_end": "14:20:00",
+          "entry_window_2_start": "13:30:00",
+          "hard_exit_time": "15:00:00",
+          "minimum_confirmation_score": 3,
+          "minimum_management_minutes": 30,
+          "rsi_threshold": 58.0,
+          "score_model": "hard_gates_confirmation_5",
+          "vix_gate_threshold": 22.0,
+          "vix_min_decline_percent": 2.0,
+          "vix_strong_decline_percent": 5.0
+        },
+        "documentation_sha256": "a9ca41df1191411f9d23ef3fac6483016675205340274fd3d778adf0c14104ee",
+        "fixed_rules_sha256": "b3e59402a7c121857dedeb85bceb9d842195de641299676551db71bf5582c43d",
+        "parameter_schema_sha256": "90bafd2d4862429b9b7326b7909dfaaaab9b00484ac32af2f640dae069150517",
+        "reasons": {
+          "ACCEPTED": 58,
+          "OUTSIDE_ENTRY_WINDOW": 138,
+          "PDH_UNAVAILABLE": 29
+        },
+        "required_capabilities": [
+          "price_candles",
+          "futures_vwap",
+          "india_vix"
+        ],
+        "schema_version": 1,
+        "supported_modes": [
+          "signal_research"
+        ],
+        "template_decisions": {
+          "hard_gates_confirmation_5": "67478052a6c19ffca52aca05f128397ad3bb379ab35c6c20793835cff3681214",
+          "legacy_weighted_10": "35fbe363ab63286a4c9adf7653d3b08cb8446114dfa67a4aa15135713c84316f"
+        },
+        "templates_sha256": "ad64a18ac852d8f025600916549a30a021060411b5caacc919cc311a74143cd5"
+      },
+      "bull_call_spread@1.0.0-bull-call-spread-v1": {
+        "accepted_count": 64,
+        "active": false,
+        "decision_count": 225,
+        "decisions_sha256": "b121daa52edcf49ba51c611ff507a7d706439e2979f372bd02eef096fd812203",
+        "default_parameters": {
+          "atm_increment": 50,
+          "entry_window_1_enabled": true,
+          "entry_window_1_end": "11:00:00",
+          "entry_window_1_start": "09:30:00",
+          "entry_window_2_enabled": true,
+          "entry_window_2_end": "14:30:00",
+          "entry_window_2_start": "13:30:00",
+          "evaluation_interval_minutes": 5,
+          "fallback_enabled": true,
+          "fallback_spread_width": 250,
+          "flat_round_trip_cost": 400.0,
+          "hard_exit_time": "15:00:00",
+          "lots": 1,
+          "max_trades_per_day": 1,
+          "maximum_daily_loss": 10000.0,
+          "maximum_debit_percent": 35.0,
+          "minimum_score": 7,
+          "minimum_vix_decline_percent": 0.0,
+          "monitoring_interval_minutes": 5,
+          "pdh_weight": 3,
+          "primary_spread_width": 200,
+          "rsi_period": 14,
+          "rsi_threshold": 58.0,
+          "rsi_weight": 2,
+          "same_day_weekly_expiry": true,
+          "slippage_percent": 5.0,
+          "stop_loss_percent": 40.0,
+          "target_max_profit_percent": 50.0,
+          "trend_spread_decline_percent": 25.0,
+          "vix_maximum": 22.0,
+          "vix_weight": 3,
+          "vwap_weight": 2
+        },
+        "documentation_sha256": "5483b76c26e7209fa2531445b77962159ab196b02b7599d17207c5295487a336",
+        "fixed_rules_sha256": "472bd9e331490ae76973b81f3bba33dfadc0f8c96d51dfde2d413cefc2184844",
+        "parameter_schema_sha256": "4e65a39366206c0e4f319dc1257f9f0f1ee98780e29c61c1617562b6be5e9959",
+        "reasons": {
+          "ACCEPTED": 64,
+          "OUTSIDE_ENTRY_WINDOW": 129,
+          "PDH_UNAVAILABLE": 32
+        },
+        "required_capabilities": [
+          "price_candles",
+          "futures_vwap",
+          "india_vix",
+          "option_ohlc",
+          "option_contracts"
+        ],
+        "schema_version": 2,
+        "supported_modes": [
+          "OPTION_SPREAD_SIMULATION"
+        ],
+        "template_decisions": {
+          "primary_document_defaults": "b121daa52edcf49ba51c611ff507a7d706439e2979f372bd02eef096fd812203"
+        },
+        "templates_sha256": "db1cc1d1009425f3377300781a051876810bcc49a60ccac5164cbd8411da37da"
+      },
+      "bull_call_spread@1.1.0-bull-call-spread-v1": {
+        "accepted_count": 64,
+        "active": false,
+        "decision_count": 225,
+        "decisions_sha256": "b121daa52edcf49ba51c611ff507a7d706439e2979f372bd02eef096fd812203",
+        "default_parameters": {
+          "atm_increment": 50,
+          "entry_window_1_enabled": true,
+          "entry_window_1_end": "11:00:00",
+          "entry_window_1_start": "09:30:00",
+          "entry_window_2_enabled": true,
+          "entry_window_2_end": "14:30:00",
+          "entry_window_2_start": "13:30:00",
+          "evaluation_interval_minutes": 5,
+          "fallback_enabled": true,
+          "fallback_spread_width": 250,
+          "flat_round_trip_cost": 400.0,
+          "hard_exit_time": "15:00:00",
+          "lots": 1,
+          "max_trades_per_day": 1,
+          "maximum_daily_loss": 10000.0,
+          "maximum_debit_percent": 35.0,
+          "minimum_score": 7,
+          "minimum_vix_decline_percent": 0.0,
+          "monitoring_interval_minutes": 5,
+          "pdh_weight": 3,
+          "primary_spread_width": 200,
+          "rsi_period": 14,
+          "rsi_threshold": 58.0,
+          "rsi_weight": 2,
+          "same_day_weekly_expiry": true,
+          "slippage_percent": 5.0,
+          "stop_loss_percent": 40.0,
+          "target_max_profit_percent": 50.0,
+          "trend_spread_decline_percent": 25.0,
+          "vix_maximum": 22.0,
+          "vix_weight": 3,
+          "vwap_weight": 2
+        },
+        "documentation_sha256": "df12aa148c8b37f0a6ced362012b80f1df8ab0cf155f754189dc81ce275dbb7b",
+        "fixed_rules_sha256": "472bd9e331490ae76973b81f3bba33dfadc0f8c96d51dfde2d413cefc2184844",
+        "parameter_schema_sha256": "4e65a39366206c0e4f319dc1257f9f0f1ee98780e29c61c1617562b6be5e9959",
+        "reasons": {
+          "ACCEPTED": 64,
+          "OUTSIDE_ENTRY_WINDOW": 129,
+          "PDH_UNAVAILABLE": 32
+        },
+        "required_capabilities": [
+          "price_candles",
+          "futures_vwap",
+          "india_vix",
+          "option_ohlc",
+          "option_contracts"
+        ],
+        "schema_version": 2,
+        "supported_modes": [
+          "OPTION_SPREAD_SIMULATION"
+        ],
+        "template_decisions": {
+          "primary_document_defaults": "b121daa52edcf49ba51c611ff507a7d706439e2979f372bd02eef096fd812203"
+        },
+        "templates_sha256": "db1cc1d1009425f3377300781a051876810bcc49a60ccac5164cbd8411da37da"
+      },
+      "bull_call_spread@1.2.0-bull-call-spread-v1": {
+        "accepted_count": 64,
+        "active": true,
+        "decision_count": 225,
+        "decisions_sha256": "dda0ab7e4c1112211b7183e90029e42a58741417218bd0270441af472cbc8d5a",
+        "default_parameters": {
+          "atm_increment": 50,
+          "entry_window_1_enabled": true,
+          "entry_window_1_end": "11:00:00",
+          "entry_window_1_start": "09:30:00",
+          "entry_window_2_enabled": true,
+          "entry_window_2_end": "14:30:00",
+          "entry_window_2_start": "13:30:00",
+          "evaluation_interval_minutes": 5,
+          "fallback_enabled": true,
+          "fallback_spread_width": 250,
+          "flat_round_trip_cost": 400.0,
+          "hard_exit_time": "15:00:00",
+          "lots": 1,
+          "max_trades_per_day": 1,
+          "maximum_daily_loss": 10000.0,
+          "maximum_debit_percent": 35.0,
+          "minimum_score": 3,
+          "minimum_vix_decline_percent": 0,
+          "monitoring_interval_minutes": 5,
+          "pdh_weight": 0,
+          "primary_spread_width": 200,
+          "rsi_period": 14,
+          "rsi_threshold": 58.0,
+          "rsi_weight": 2,
+          "same_day_weekly_expiry": true,
+          "slippage_percent": 5.0,
+          "stop_loss_percent": 40.0,
+          "target_max_profit_percent": 50.0,
+          "trend_spread_decline_percent": 25.0,
+          "vix_maximum": 22.0,
+          "vix_weight": 3,
+          "vwap_weight": 0
+        },
+        "documentation_sha256": "6308bef18e17c23992abfafeb8a0cb6b1ea97e25a688dd3788fa79289d08cb23",
+        "fixed_rules_sha256": "1224b3aec475d1b714ed9a11869bb7f55109cacc6151b25260ed00479be7631e",
+        "parameter_schema_sha256": "2ecf1c1c94e9821b98c6aac3ffaa3b9dc0450db22a6bd62be06406ee1459468f",
+        "reasons": {
+          "ACCEPTED": 64,
+          "OUTSIDE_ENTRY_WINDOW": 129,
+          "PDH_UNAVAILABLE": 32
+        },
+        "required_capabilities": [
+          "price_candles",
+          "futures_vwap",
+          "india_vix",
+          "option_ohlc",
+          "option_contracts"
+        ],
+        "schema_version": 3,
+        "supported_modes": [
+          "OPTION_SPREAD_SIMULATION"
+        ],
+        "template_decisions": {
+          "partner_q04_defaults": "dda0ab7e4c1112211b7183e90029e42a58741417218bd0270441af472cbc8d5a"
+        },
+        "templates_sha256": "91ef9215d56fad592c001ab267daf39163544b80b01dfd7c4116e52847c6cd28"
+      },
+      "bull_call_spread@1.3.0-bull-call-spread-v1": {
+        "accepted_count": 64,
+        "active": true,
+        "decision_count": 225,
+        "decisions_sha256": "3866376c88d57adbe24226b5a25a5062713d23726e6c3d37b60c74e3a4ac1c33",
+        "default_parameters": {
+          "atm_increment": 50,
+          "entry_window_1_enabled": true,
+          "entry_window_1_end": "11:00:00",
+          "entry_window_1_start": "09:30:00",
+          "entry_window_2_enabled": true,
+          "entry_window_2_end": "14:30:00",
+          "entry_window_2_start": "13:30:00",
+          "evaluation_interval_minutes": 5,
+          "fallback_enabled": true,
+          "fallback_spread_width": 250,
+          "flat_round_trip_cost": 400.0,
+          "hard_exit_time": "15:00:00",
+          "lots": 1,
+          "max_trades_per_day": 1,
+          "maximum_daily_loss": 10000.0,
+          "maximum_debit_percent": 35.0,
+          "minimum_score": 3,
+          "minimum_vix_decline_percent": 0,
+          "monitoring_interval_minutes": 5,
+          "pdh_weight": 0,
+          "primary_spread_width": 200,
+          "rsi_period": 14,
+          "rsi_threshold": 58.0,
+          "rsi_weight": 2,
+          "same_day_weekly_expiry": true,
+          "slippage_percent": 5.0,
+          "stop_loss_percent": 40.0,
+          "target_max_profit_percent": 50.0,
+          "trend_spread_decline_percent": 25.0,
+          "vix_maximum": 22.0,
+          "vix_weight": 3,
+          "vwap_weight": 0
+        },
+        "documentation_sha256": "59fdcc9c761dea743790cc685caaa3ffc490346cf5ce1fcb949f520e46633ce5",
+        "fixed_rules_sha256": "8158baa72394bd4e39094a70de5dad0d23542b5d2d1575c77df928f177a11938",
+        "parameter_schema_sha256": "6c09b279ad5dd2dd268a244ef5f9820c04c6762a66313893d751725c57e3c7f3",
+        "reasons": {
+          "ACCEPTED": 64,
+          "OUTSIDE_ENTRY_WINDOW": 129,
+          "PDH_UNAVAILABLE": 32
+        },
+        "required_capabilities": [
+          "price_candles",
+          "futures_vwap",
+          "india_vix",
+          "option_ohlc",
+          "option_contracts"
+        ],
+        "schema_version": 4,
+        "supported_modes": [
+          "OPTION_SPREAD_SIMULATION"
+        ],
+        "template_decisions": {
+          "futures_vwap_correction": "3866376c88d57adbe24226b5a25a5062713d23726e6c3d37b60c74e3a4ac1c33"
+        },
+        "templates_sha256": "ca2de82f010ce75c16b81310b1fa4fbaf892eeaf8217245895342e95da827a3d"
+      },
+      "platform_demo@1.0.0-platform-demo": {
+        "accepted_count": 45,
+        "active": true,
+        "decision_count": 225,
+        "decisions_sha256": "1f9193901718d0c3943c6705bf830ae74c8dba24a3ef63a4ad47cbcef9b8305c",
+        "default_parameters": {
+          "hold_candles": 3,
+          "signal_every_n_candles": 5
+        },
+        "documentation_sha256": "698c3805a7ba1b5a9b2a39e33abd4908a6c7abe78056b59d8b0984307830d12d",
+        "execution_sha256": "6ce36d06cf91ed76ad122af7d17f823615a2d02564ffbb5fce4de388ad031bbc",
+        "fixed_rules_sha256": "c5729aa4820ec42096b6720675945bfff9682ce4abd08be25b4d0b9f1266bc59",
+        "metrics": {
+          "expectancy_demo_units": "1.50000000",
+          "financial_pnl_available": false,
+          "losses": 0,
+          "max_drawdown_demo_units": "0E-8",
+          "synthetic": true,
+          "total_trades": 42,
+          "unit": "DEMO_UNITS",
+          "wins": 42
+        },
+        "parameter_schema_sha256": "5a8bcde51cdbe213f539c4df83e87602218730bf6cf815798ea2a91b7cfd01ec",
+        "reasons": {
+          "ACCEPTED": 45,
+          "DEMO_HOLD_ACTIVE": 126,
+          "DEMO_INTERVAL_NOT_REACHED": 54
+        },
+        "required_capabilities": [
+          "price_candles"
+        ],
+        "schema_version": 1,
+        "supported_modes": [
+          "PLATFORM_DEMO"
+        ],
+        "template_decisions": {
+          "deterministic_fixture": "1f9193901718d0c3943c6705bf830ae74c8dba24a3ef63a4ad47cbcef9b8305c"
+        },
+        "templates_sha256": "fd0dfc26597ec43a110bd61b55ab99cfc504862172e147273ecfc15ed55b1ffc"
+      }
+    }
+  }
+}

@@ -1,0 +1,364 @@
+{
+  "specification": {
+    "algorithm_key": "model2_overnight_iron_condor",
+    "implementation_status_at_freeze": "FOUNDATION_ONLY_NOT_REGISTERED",
+    "presets": [
+      {
+        "key": "primary_200",
+        "name": "Primary 200-point wings",
+        "parameters": {
+          "slippage_percent": "2.00",
+          "vix_state_filter_enabled": false,
+          "wing_width_points": 200
+        }
+      },
+      {
+        "key": "alternative_150",
+        "name": "Alternative 150-point wings",
+        "parameters": {
+          "slippage_percent": "2.00",
+          "vix_state_filter_enabled": false,
+          "wing_width_points": 150
+        }
+      }
+    ],
+    "rule_references": [
+      {
+        "acceptance_cases": [
+          "holiday_cycle",
+          "special_session"
+        ],
+        "id": "calendar",
+        "source_sections": [
+          "original:3,4,4A",
+          "round2:Q1"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "entry_1520",
+          "entry_retry",
+          "entry_rejected"
+        ],
+        "id": "entry",
+        "source_sections": [
+          "round2:Q2,R2-1"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "round_away",
+          "missing_contract",
+          "widths"
+        ],
+        "id": "selection",
+        "source_sections": [
+          "round2:Q3,R2-6"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "credit_boundary",
+          "vix_boundary",
+          "invalid_max_loss"
+        ],
+        "id": "entry_filters",
+        "source_sections": [
+          "original:4",
+          "round2:Q5,R2-7"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "adverse_slippage",
+          "no_future_volume",
+          "missing_previous_bar"
+        ],
+        "id": "pricing",
+        "source_sections": [
+          "round2:Q4,Q5,R2-1,R2-3"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "cap_rejection",
+          "cap_equality",
+          "historical_lot_size"
+        ],
+        "id": "risk_cap",
+        "source_sections": [
+          "round2:Q6,R2-5,R2-6,R2-7"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "margin_rejection",
+          "margin_equality"
+        ],
+        "id": "margin",
+        "source_sections": [
+          "round2:Q7,R2-6"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "next_open_exit",
+          "time_exit",
+          "gap_stop",
+          "exit_priority"
+        ],
+        "id": "exits",
+        "source_sections": [
+          "round2:Q8,Q9,R2-1,R2-2"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "vix_spike",
+          "vix_gap",
+          "feed_lost",
+          "exchange_halt"
+        ],
+        "id": "emergency",
+        "source_sections": [
+          "original:6",
+          "round2:Q9,R2-8"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "late_fill",
+          "settlement",
+          "excluded"
+        ],
+        "id": "late_data",
+        "source_sections": [
+          "round2:R2-4"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "charges_once",
+          "no_settlement_slippage"
+        ],
+        "id": "costs",
+        "source_sections": [
+          "round2:Q11,R2-4,R2-6"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "net_monthly_loss",
+          "loss_pause",
+          "zero_streak",
+          "capital_scaling"
+        ],
+        "id": "loss_controls",
+        "source_sections": [
+          "round2:Q11,R2-5"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "pending_overnight",
+          "overnight_retries",
+          "target_becomes_stop_gap"
+        ],
+        "id": "overnight",
+        "source_sections": [
+          "lifecycle:1"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "placeholder_risk_only",
+          "three_scenarios",
+          "scenario_divergence"
+        ],
+        "id": "excluded_risk",
+        "source_sections": [
+          "lifecycle:2"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "reliability_pending",
+          "strictly_over_two_percent"
+        ],
+        "id": "reliability",
+        "source_sections": [
+          "lifecycle:2"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "filter_default_off",
+          "filter_reference",
+          "filter_unknown"
+        ],
+        "id": "experimental_filter",
+        "source_sections": [
+          "round2:Q1,R2-8"
+        ]
+      },
+      {
+        "acceptance_cases": [
+          "development_split",
+          "validation_limit",
+          "no_live_trading"
+        ],
+        "id": "research_scope",
+        "source_sections": [
+          "original:8,10,12",
+          "round2:Q12,R2-7"
+        ]
+      }
+    ],
+    "rules": {
+      "all_legs_synchronized": true,
+      "allowed_slippage_percent": [
+        "0.00",
+        "1.00",
+        "2.00"
+      ],
+      "allowed_wing_width_points": [
+        150,
+        200
+      ],
+      "assessment_slippage_percent": "2.00",
+      "assessment_status": "NOT_ASSESSED_POLICY_PENDING",
+      "capital_basis": "FIXED_RUN_STARTING_CAPITAL",
+      "cost_per_leg_per_lot_round_trip_inr": "100.00",
+      "credit_basis": "AFTER_ENTRY_SLIPPAGE",
+      "daily_loss_fraction": "0.015",
+      "default_starting_capital_inr": "500000.00",
+      "default_vix_state_filter_enabled": false,
+      "development_end": "2026-07-17",
+      "development_start": "2023-11-16",
+      "entry_decision_time": "15:20:00",
+      "entry_open_times": [
+        "15:20:00",
+        "15:25:00"
+      ],
+      "entry_retry_on": "INVALID_PRICE_DATA_ONLY",
+      "entry_source_bar_start": "15:15:00",
+      "excluded_cycles_in_priced_performance": false,
+      "excluded_primary_risk_policy": "MAX_LOSS_INCLUDING_CHARGES",
+      "execution_bar_future_fields_allowed": false,
+      "execution_open_positive": true,
+      "exit_priority": [
+        "EMERGENCY",
+        "STOP",
+        "TIME",
+        "TARGET"
+      ],
+      "experimental_filter_equality_is_rise": true,
+      "experimental_filter_missing_reference": "SKIP_IF_ENABLED",
+      "experimental_filter_previous_session_bar_start": "15:25:00",
+      "experimental_filter_reference_fallback_not_before": "15:00:00",
+      "feed_lost_after_missing_scheduled_bars": 3,
+      "fill_policy": "NEXT_OPEN_ADVERSE_SLIPPAGE",
+      "fill_tick_rounding": "BUY_CEILING_SELL_FLOOR",
+      "futures_required": false,
+      "hard_trade_risk_fraction": "0.025",
+      "holding_period": "EXPIRY_EVE_OVERNIGHT",
+      "k": "1.0",
+      "late_exit_last_open_time": "15:25:00",
+      "later_period_is_clean_holdout": false,
+      "leg_count": 4,
+      "leg_roles": [
+        "SHORT_CALL",
+        "LONG_CALL",
+        "SHORT_PUT",
+        "LONG_PUT"
+      ],
+      "limits_force_open_position_exit": false,
+      "live_trading_approved": false,
+      "losing_streak_before_pause": 3,
+      "loss_control_basis": "CUMULATIVE_NET_REALIZED_PLUS_SCENARIO_RISK_ASSUMPTIONS",
+      "lots": 1,
+      "margin_above_limit": "REJECT",
+      "margin_capital_fraction": "0.40",
+      "margin_multiplier": "1.5",
+      "margin_quality": "ASSUMED",
+      "maximum_entry_vix_inclusive": "28",
+      "maximum_loss_includes_charges": true,
+      "maximum_loss_points_must_be_positive": true,
+      "maximum_open_positions": 1,
+      "minimum_credit_points": "12",
+      "missing_exit_policy": "LATE_FILL_THEN_OFFICIAL_SETTLEMENT_THEN_EXCLUSION",
+      "model3_included": false,
+      "monthly_loss_fraction": "0.04",
+      "normal_exit_retry_count": 2,
+      "opening_fill_prior_close_positive": true,
+      "opening_fill_prior_volume_positive": true,
+      "opening_gap_check_time": "09:15:00",
+      "opening_stop_over_pending_target_reason": "STOP_GAP",
+      "overnight_pauses_retry_clock": true,
+      "pause_scheduled_cycles": 2,
+      "pending_overnight_open_times": [
+        "09:15:00",
+        "09:20:00",
+        "09:25:00"
+      ],
+      "preserve_original_exit_trigger": true,
+      "profit_target_fraction_of_credit": "0.50",
+      "random_day_control_protocol": null,
+      "reliability_comparison": "STRICTLY_GREATER_THAN",
+      "reliability_denominator": null,
+      "reliability_threshold_fraction": "0.02",
+      "required_market_inputs": [
+        "NIFTY_SPOT_OHLC",
+        "INDIA_VIX_OHLC",
+        "OPTION_CE_PE_OHLCV",
+        "OPTION_CONTRACT_METADATA",
+        "EXCHANGE_SESSION_CALENDAR"
+      ],
+      "sensitivity_requires_independent_replays": true,
+      "settlement_slippage": false,
+      "single_loss_validation_fraction": "0.025",
+      "stop_loss_fraction_of_credit": "1.00",
+      "strike_halfway_rounding": "AWAY_FROM_SPOT",
+      "strike_step_points": 50,
+      "target_and_stop_include_charges": false,
+      "target_trade_risk_fraction": "0.015",
+      "time_exit_open_times": [
+        "14:30:00",
+        "14:35:00",
+        "14:40:00"
+      ],
+      "underlying": "NIFTY_50",
+      "vix_comparison_minutes": 30,
+      "vix_comparison_resets_each_session": true,
+      "vix_emergency_rise_fraction": "0.15",
+      "vix_fallback_minutes": 5,
+      "win_or_pause_end_streak_action": "RESET",
+      "zero_net_streak_action": "UNCHANGED"
+    },
+    "scenario_policies": [
+      "MAX_LOSS_RISK",
+      "ZERO_RISK",
+      "HALT_AT_FIRST_EXCLUSION"
+    ],
+    "schema_version": "stockbot.model2-specification.v1",
+    "source_precedence": [
+      {
+        "id": "lifecycle",
+        "path": "sources/lifecycle-answers-2026-11-17.txt",
+        "sha256": "9ec6eb4a41d4a1817a256ca6b5b60accc168d32f8243da16bfedd42ca99a4977"
+      },
+      {
+        "id": "round2",
+        "path": "sources/round2-answers-2026-11-17.txt",
+        "sha256": "0162c342b255af4fb77dcd1d611ea629b6b2707b333d003e2988e185e5dde628"
+      },
+      {
+        "id": "original",
+        "path": "sources/original-model2-specification.docx",
+        "sha256": "45b5b4ad5b2821011c054f7d1777e75512db08a5fa770dbb336062c058acb5d4"
+      }
+    ],
+    "specification_version": "1.4"
+  },
+  "specification_sha256": "1b6f466bf000757eebc2ce67fc0554f917b58887701aab42a224fc9068fcb30c"
+}

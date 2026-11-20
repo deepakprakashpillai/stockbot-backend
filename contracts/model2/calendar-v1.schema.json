@@ -1,0 +1,108 @@
+{
+  "$defs": {
+    "SessionPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "closes_at": {
+          "anyOf": [
+            {
+              "format": "time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Closes At"
+        },
+        "kind": {
+          "enum": [
+            "NORMAL",
+            "SPECIAL"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "opens_at": {
+          "anyOf": [
+            {
+              "format": "time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Opens At"
+        },
+        "session_date": {
+          "format": "date",
+          "title": "Session Date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_date",
+        "kind"
+      ],
+      "title": "SessionPayload",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "coverage_end": {
+      "format": "date",
+      "title": "Coverage End",
+      "type": "string"
+    },
+    "coverage_start": {
+      "format": "date",
+      "title": "Coverage Start",
+      "type": "string"
+    },
+    "expiry_reference": {
+      "minLength": 1,
+      "title": "Expiry Reference",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "stockbot.model2-calendar.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "sessions": {
+      "items": {
+        "$ref": "#/$defs/SessionPayload"
+      },
+      "title": "Sessions",
+      "type": "array"
+    },
+    "version": {
+      "minLength": 1,
+      "title": "Version",
+      "type": "string"
+    },
+    "weekly_expiries": {
+      "items": {
+        "format": "date",
+        "type": "string"
+      },
+      "title": "Weekly Expiries",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "version",
+    "coverage_start",
+    "coverage_end",
+    "expiry_reference",
+    "sessions",
+    "weekly_expiries"
+  ],
+  "title": "CalendarPayload",
+  "type": "object"
+}

@@ -67,6 +67,9 @@ def dispatch_pending_jobs(
             else:
                 enqueue_job(session, "EXPORT", export.id)
         session.flush()
+        from app.application.model2.recovery import recover_expired
+
+        recover_expired(session, limit)
         jobs = list(
             session.scalars(
                 select(JobDispatch)
@@ -109,6 +112,10 @@ def dispatch_pending_jobs(
                     args=[str(job.resource_id)],
                     task_id=str(job.id),
                     retry=False,
+                    # Durable outcomes are in PostgreSQL. Do not open a result
+                    # subscription while delivering a job: a Redis outage must
+                    # leave this intent retryable without a result-store restart.
+                    ignore_result=True,
                 )
             except Exception:
                 logger.warning(

@@ -36,7 +36,26 @@ class CoverageExclusionResponse(BaseModel):
     details: dict[str, Any] = Field(default_factory=dict)
 
 
+class Model2EntryEstimateResponse(BaseModel):
+    credit_points: Decimal
+    maximum_loss_inr: Decimal | None
+    assumed_margin_inr: Decimal | None
+    margin_source: Literal["ASSUMED"] = "ASSUMED"
+
+
+class Model2CycleCoverageResponse(BaseModel):
+    expiry: date
+    entry_date: date
+    classification: str
+    entry_data_available: bool
+    reason: str | None
+    entry_estimate: Model2EntryEstimateResponse | None
+
+
 class BacktestPreflightResponse(BaseModel):
+    requested_cycle_count: int | None = None
+    entry_ready_cycle_count: int | None = None
+    cycles: list[Model2CycleCoverageResponse] = Field(default_factory=list)
     allowed: bool
     mode: str
     dataset_version_id: UUID
@@ -82,6 +101,8 @@ class RunOutcomeSummaryResponse(BaseModel):
 
 
 class BacktestRunResponse(BaseModel):
+    scenario_group_id: UUID | None = None
+    scenario_policy: str | None = None
     id: UUID
     dataset_version_id: UUID
     algorithm_version_id: UUID

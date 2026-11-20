@@ -107,6 +107,7 @@ class ExecutionAttempt(Base):
     __tablename__ = "backtest_execution_attempts"
     __table_args__ = (
         UniqueConstraint("run_id", "attempt_number", name="uq_backtest_attempt_number"),
+        UniqueConstraint("id", "run_id", name="uq_backtest_attempt_identity"),
         CheckConstraint("attempt_number > 0", name="ck_backtest_attempt_number_positive"),
     )
 
@@ -445,7 +446,12 @@ class TradeLeg(Base):
     __tablename__ = "trade_legs"
     __table_args__ = (
         UniqueConstraint("trade_id", "leg_number", name="uq_trade_legs_number"),
-        CheckConstraint("leg_number IN (1, 2)", name="ck_trade_legs_placeholder_number"),
+        UniqueConstraint("trade_id", "role", name="uq_trade_legs_role"),
+        CheckConstraint(
+            "role IS NULL OR role IN ('SHORT_CALL','LONG_CALL','SHORT_PUT','LONG_PUT')",
+            name="ck_trade_leg_role",
+        ),
+        CheckConstraint("leg_number BETWEEN 1 AND 4", name="ck_trade_legs_placeholder_number"),
         CheckConstraint("unit IN ('DEMO_UNITS', 'INR')", name="ck_trade_legs_unit"),
         CheckConstraint(
             "(unit = 'DEMO_UNITS' AND synthetic AND NOT financial_pnl_available) OR (unit = 'INR' AND NOT synthetic AND financial_pnl_available)",
@@ -464,6 +470,16 @@ class TradeLeg(Base):
     unit: Mapped[str] = mapped_column(String(20), nullable=False, default="DEMO_UNITS")
     financial_pnl_available: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     trade: Mapped[Trade] = relationship(back_populates="legs")
+    role: Mapped[str | None] = mapped_column(String(30))
+    option_type: Mapped[str | None] = mapped_column(String(2))
+    strike: Mapped[int | None] = mapped_column(Integer)
+    expiry: Mapped[date | None] = mapped_column(Date)
+    contract_id: Mapped[str | None] = mapped_column(String(200))
+    side: Mapped[str | None] = mapped_column(String(4))
+    quantity: Mapped[int | None] = mapped_column(Integer)
+    lot_size: Mapped[int | None] = mapped_column(Integer)
+    tick_size: Mapped[Decimal | None] = mapped_column(Numeric(20, 8))
+    pricing_evidence: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
 
 
 class EquityPoint(Base):

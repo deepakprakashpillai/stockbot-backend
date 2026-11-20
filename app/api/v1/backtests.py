@@ -104,6 +104,7 @@ def preflight(
                 body.end_date,
                 body.warning_acknowledged,
                 body.accepted_coverage_digest,
+                starting_capital=body.starting_capital,
             )
         )
     except BacktestServiceError as exc:
@@ -374,6 +375,16 @@ def list_journal_events(
     run = repository.get_run(run_id)
     if run is None:
         return _not_found(request)
+    if run.mode == "OPTION_PORTFOLIO_SIMULATION":
+        return _error(
+            request,
+            BacktestServiceError(
+                "OPTION_PORTFOLIO_REPRESENTATION_REQUIRED",
+                "Use portfolio-journal to read the overnight position states.",
+                409,
+                {"path": f"/api/v1/backtests/{run_id}/portfolio-journal"},
+            ),
+        )
     selected_attempt_id = attempt_id or run.active_attempt_id
     if selected_attempt_id is None:
         return JournalEventListResponse(
@@ -458,6 +469,16 @@ def get_trade(
     value = BacktestRepository(session).get_trade(run_id, trade_id)
     if value is None:
         return _not_found(request)
+    if getattr(value, "assumptions", {}).get("algorithm_key") == "model2_overnight_iron_condor":
+        return _error(
+            request,
+            BacktestServiceError(
+                "OPTION_PORTFOLIO_REPRESENTATION_REQUIRED",
+                "Use option-positions to read all four legs.",
+                409,
+                {"path": f"/api/v1/backtests/{run_id}/option-positions"},
+            ),
+        )
     return _trade(value)
 
 
@@ -471,7 +492,7 @@ def get_equity_point(
     if value is None:
         return _not_found(request)
     mode = getattr(run, "mode", "PLATFORM_DEMO")
-    is_inr = mode == "OPTION_SPREAD_SIMULATION"
+    is_inr = mode in {"OPTION_SPREAD_SIMULATION", "OPTION_PORTFOLIO_SIMULATION"}
     return DemoEquityPointResponse(
         id=value.id,
         sequence=value.sequence,
@@ -522,7 +543,7 @@ def get_live_snapshot(
             else run.started_at or run.created_at
         )
     mode = getattr(run, "mode", "PLATFORM_DEMO")
-    is_inr = mode == "OPTION_SPREAD_SIMULATION"
+    is_inr = mode in {"OPTION_SPREAD_SIMULATION", "OPTION_PORTFOLIO_SIMULATION"}
     return LiveRunSnapshotResponse(
         run_id=run.id,
         status=run.status,
@@ -562,8 +583,19 @@ def list_trades(
     ] = "SEQUENCE_ASC",
 ) -> DemoTradeListResponse | JSONResponse:
     repository = BacktestRepository(session)
-    if repository.get_run(run_id) is None:
+    run = repository.get_run(run_id)
+    if run is None:
         return _not_found(request)
+    if getattr(run, "mode", None) == "OPTION_PORTFOLIO_SIMULATION":
+        return _error(
+            request,
+            BacktestServiceError(
+                "OPTION_PORTFOLIO_REPRESENTATION_REQUIRED",
+                "Use option-positions to read all four legs.",
+                409,
+                {"path": f"/api/v1/backtests/{run_id}/option-positions"},
+            ),
+        )
     invalid_range = _validate_timestamp_range(request, start, end)
     if invalid_range is not None:
         return invalid_range
@@ -672,7 +704,7 @@ def list_equity(
     if run is None:
         return _not_found(request)
     mode = getattr(run, "mode", "PLATFORM_DEMO")
-    is_inr = mode == "OPTION_SPREAD_SIMULATION"
+    is_inr = mode in {"OPTION_SPREAD_SIMULATION", "OPTION_PORTFOLIO_SIMULATION"}
     return DemoEquityPointListResponse(
         items=[
             DemoEquityPointResponse(
