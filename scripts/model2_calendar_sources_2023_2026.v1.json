@@ -1,0 +1,54 @@
+{
+  "schema_version": "stockbot.model2-calendar-sources.v1",
+  "version": "nse-fo-sourced-2023-11-15_2026-11-16.v1",
+  "coverage_start": "2023-11-15",
+  "coverage_end": "2026-11-16",
+  "normal_session": {"opens_at": "09:15:00", "closes_at": "15:30:00"},
+  "qualification": "Operator data artifact only. NORMAL uses the approved Model 2 clock. Announced exceptional weekend, split and Muhurat sessions are SPECIAL and are not executable by Model 2. Source rows outside scheduled hours are reported and not used to infer sessions or expiries. Contract metadata confirms availability, not strike completeness, candle completeness, executable bid/ask or research approval.",
+  "sources": {
+    "FAOP54759": "https://archives.nseindia.com/content/circulars/FAOP54759.pdf",
+    "FAOP59723": "https://archives.nseindia.com/content/circulars/FAOP59723.pdf",
+    "CMPT60343": "https://nsearchives.nseindia.com/content/circulars/CMPT60343.pdf",
+    "FAOP61517": "https://nsearchives.nseindia.com/content/circulars/FAOP61517.pdf",
+    "FAOP64959": "https://nsearchives.nseindia.com/content/circulars/FAOP64959.pdf",
+    "FAOP65588": "https://nsearchives.nseindia.com/content/circulars/FAOP65588.pdf",
+    "FAOP71777": "https://nsearchives.nseindia.com/content/circulars/FAOP71777.pdf",
+    "NSE_HOLIDAYS": "https://www.nseindia.in/resources/exchange-communication-holidays?apiversion=v2",
+    "MSD60340": "https://nsearchives.nseindia.com/content/circulars/MSD60340.pdf",
+    "MSD60677": "https://nsearchives.nseindia.com/content/circulars/MSD60677.pdf",
+    "MSD61893": "https://nsearchives.nseindia.com/content/circulars/MSD61893.pdf",
+    "FAOP64630": "https://nsearchives.nseindia.com/content/circulars/FAOP64630.pdf",
+    "FAOP65730": "https://nsearchives.nseindia.com/content/circulars/FAOP65730.pdf",
+    "FAOP70320": "https://nsearchives.nseindia.com/content/circulars/FAOP70320.pdf",
+    "FAOP72352": "https://nsearchives.nseindia.com/content/circulars/FAOP72352.pdf",
+    "FAOP76940": "https://archives.nseindia.com/content/circulars/FAOP76940.pdf",
+    "FAOP67338": "https://nsearchives.nseindia.com/content/circulars/FAOP67338.pdf",
+    "FAOP68747": "https://nsearchives.nseindia.com/web/sites/default/files/inline-files/FAOP68747.pdf",
+    "NSE_CONTRACT_SPEC": "https://www.nseindia.in/static/products-services/equity-derivatives-contract-specifications"
+  },
+  "holiday_groups": [
+    {"source_ids": ["FAOP54759"], "dates": ["2023-11-27", "2023-12-25"]},
+    {"source_ids": ["FAOP59723"], "dates": ["2024-01-26", "2024-03-08", "2024-03-25", "2024-03-29", "2024-04-11", "2024-04-17", "2024-05-01", "2024-06-17", "2024-07-17", "2024-08-15", "2024-10-02", "2024-11-01", "2024-11-15", "2024-12-25"]},
+    {"source_ids": ["CMPT60343"], "dates": ["2024-01-22"]},
+    {"source_ids": ["FAOP61517"], "dates": ["2024-05-20"]},
+    {"source_ids": ["FAOP64959"], "dates": ["2024-11-20"]},
+    {"source_ids": ["FAOP65588"], "dates": ["2025-02-26", "2025-03-14", "2025-03-31", "2025-04-10", "2025-04-14", "2025-04-18", "2025-05-01", "2025-08-15", "2025-08-27", "2025-10-02", "2025-10-21", "2025-10-22", "2025-11-05", "2025-12-25"]},
+    {"source_ids": ["FAOP71777"], "dates": ["2026-01-26", "2026-03-03", "2026-03-26", "2026-03-31", "2026-04-03", "2026-04-14", "2026-05-01", "2026-05-28", "2026-06-26", "2026-09-14", "2026-10-02", "2026-10-20", "2026-11-10", "2026-11-24", "2026-12-25"]},
+    {"source_ids": ["NSE_HOLIDAYS"], "dates": ["2026-01-15"]}
+  ],
+  "exceptional_sessions": [
+    {"session_date": "2024-01-20", "kind": "SPECIAL", "opens_at": "09:15:00", "closes_at": "15:30:00", "source_ids": ["MSD60340"], "description": "Exceptional Saturday opening, replacing the earlier split-session plan; full standard market hours."},
+    {"session_date": "2024-03-02", "kind": "SPECIAL", "opens_at": null, "closes_at": null, "source_ids": ["MSD60677"], "segments": [["09:15:00", "10:00:00"], ["11:30:00", "12:30:00"]], "description": "Split disaster-recovery session; null continuous-session bounds avoid inventing trading during the break."},
+    {"session_date": "2024-05-18", "kind": "SPECIAL", "opens_at": null, "closes_at": null, "source_ids": ["MSD61893"], "segments": [["09:15:00", "10:00:00"], ["11:30:00", "12:30:00"]], "description": "Split disaster-recovery session."},
+    {"session_date": "2024-11-01", "kind": "SPECIAL", "opens_at": "18:00:00", "closes_at": "19:00:00", "source_ids": ["FAOP64630"], "description": "Muhurat opening on an otherwise declared holiday."},
+    {"session_date": "2025-02-01", "kind": "SPECIAL", "opens_at": "09:15:00", "closes_at": "15:30:00", "source_ids": ["FAOP65730"], "description": "Exceptional Saturday Budget session, standard hours."},
+    {"session_date": "2025-10-21", "kind": "SPECIAL", "opens_at": "13:45:00", "closes_at": "14:45:00", "source_ids": ["FAOP70320"], "description": "Muhurat opening does not cancel the regular-session holiday or move the weekly expiry back onto this date."},
+    {"session_date": "2026-02-01", "kind": "SPECIAL", "opens_at": "09:15:00", "closes_at": "15:30:00", "source_ids": ["FAOP72352"], "description": "Exceptional Sunday Budget session, standard hours."},
+    {"session_date": "2026-11-08", "kind": "SPECIAL", "opens_at": "14:20:00", "closes_at": "15:40:00", "source_ids": ["FAOP76940"], "description": "F&O Muhurat session. Spot index observations end at the cash-session close, so this does not assert synchronized option/spot coverage to 15:40."}
+  ],
+  "expiry_regimes": [
+    {"start": "2023-11-15", "end": "2025-08-31", "weekday": 3, "source_ids": ["FAOP68747", "FAOP67338"], "description": "NIFTY Thursday expiry. The proposed April 2025 Monday change was deferred, not implemented."},
+    {"start": "2025-09-01", "end": "2026-11-16", "weekday": 1, "source_ids": ["FAOP68747", "NSE_CONTRACT_SPEC"], "description": "NIFTY Tuesday expiry; first new weekly expiry 2 September 2025. Monthly-expiry weeks are retained as opportunities."}
+  ],
+  "expiry_holiday_rule": "Preceding trading session when nominal expiry is a regular-session holiday; a Muhurat opening on the holiday does not restore that nominal expiry. Provider metadata is separately checked for each resulting expiry."
+}
